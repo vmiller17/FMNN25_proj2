@@ -1,5 +1,7 @@
 import numpy as np
 import inspect
+import abc
+
 
 class Function:
     """This class is a function which is used together with the optimisation
@@ -84,6 +86,26 @@ class Function:
             gradient[n] = deltaFunc/(2*delta)
 
         return gradient
+
+
+
+
+
+class OptimBase(object):
+    __metaclass__ = abc.ABCMeta
+
+
+    def __init__(tol=1e-6,maxIterations=200):
+    self.tol = tol
+    self.maxIterations = maxIterations
+    self.currentValues = np.array([0,0,0])
+    return
+
+    def __call__(f,startValues):
+    pass
+
+    def step(f):
+    pass 
 
 class OptimizeNewton(Optimize):
     """This class finds the coordinates for the smallest value of a function.

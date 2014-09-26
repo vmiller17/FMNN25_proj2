@@ -74,4 +74,9 @@ class TestApproximateHessian:
     def testInputCheck(self):
         self.optimizer._approxHessian(48.)
 
+    def testReturnsArray(self):
+        c=self.optimizer._approxHessian(self.function)
+        assert issinstance(c, np.array)
+		assert c.shape == (2,2)
+
     
