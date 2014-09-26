@@ -79,7 +79,7 @@ class TestFunctionEvalGrad:
 		self.testFunction.evalGrad(np.array([1.,2.,3.]))
 
 	@raises(TypeError)
-	def testArrayType(self):
+	def testArrayWithInt(self):
 		self.testFunction.evalGrad(np.array([1,2]))
 
 	def testReturnArrayType(self):
