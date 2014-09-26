@@ -1,5 +1,7 @@
 import numpy as np
 import inspect
+import abc
+
 
 class Function:
     """This class is a function which is used together with the optimisation
@@ -70,3 +72,23 @@ class Function:
             return g(*params)
 
         #Calculate the numerecial value of g
+
+
+
+
+class OptimBase(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def __init__(tol=1e-6,maxIterations=200):
+    self.tol = tol
+    self.maxIterations = maxIterations
+    self.currentValues = np.array([0,0,0])
+
+    @abc.abstractmethod
+    def __call__(f,startValues):
+
+
+    @abc.abstractmethod
+    def step(f):
+
