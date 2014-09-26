@@ -46,7 +46,7 @@ class Function:
 
         return self._f(*params)
 
-    def evalGrad(self,params):
+    def evalGrad(self,params): #I CLAIM THIS METHOD (Hanna)
         """Evaluates the gradient of the function for the given paramaters.
 
         :param array params: A one dimensional array with n-values, where the
