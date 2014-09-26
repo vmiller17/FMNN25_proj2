@@ -48,7 +48,7 @@ class Function:
 
         return self._f(*params)
 
-    def evalGrad(self,params):
+    def evalGrad(self,params): #I CLAIM THIS METHOD (Hanna)
         """Evaluates the gradient of the function for the given paramaters.
 
         :param array params: A one dimensional array with n-values, where the
@@ -72,7 +72,20 @@ class Function:
         if self._g != None:
             return self._g(*params)
 
-        #Calculate the numerecial value of g
+        return self._secondOrderApprox(*params)
+
+    def _secondOrderApprox(self, *params):
+        gradient = np.empty(self._numargs)
+        delta = 1.e-6
+        for n in range(0, self._numargs-1):
+            tempParamsLeft = copy(params)
+            tempParamsRight = copy(params)
+            tempParamsLeft[n]+=delta
+            tempParamsRight[n]-=delta
+            deltaFunc = self._f(*tempParamsLeft) - self._f(*tempParamsright)
+            gradient[n] = deltaFunc/(2*delta)
+
+        return gradient
 
 
 
