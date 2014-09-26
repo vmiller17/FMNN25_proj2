@@ -71,3 +71,34 @@ class Function:
             return self._g(*params)
 
         #Calculate the numerecial value of g
+
+class OptimizeNewton(Optimize):
+    """This class finds the coordinates for the smallest value of a function.
+    """
+
+    def _solveEquations(self,A,b):
+        """Solves a system of equations on the form Ax=b, where A is a matrix
+        and x and b are column matrices.
+
+        :param array A: A numpy array of shape (m,n), containing floats.
+        :param array b: A numpy array of shape (m,), containing floats.
+        :returns: A numpy array of shape (m,) with the solutions for all x.
+        :rtype: array
+        :raises TypeError: If the matrices are not numpy arrays, containing
+        floats and have the right dimensions.
+        :raises ValueError: If the number of rows in are not the same as the
+        number of elements in b.
+        """
+        pass
+
+    def _approxHessian(self,f):
+        """Approximates the hessian for a function f by using a finite
+        differences scheme.
+
+        :param Function f: An object of the function class, for which the
+        hessian is to be approximated.
+        :raises TypeError: If f is not an instance of the Function class.
+        :returns: The approximated Hessian. 
+        :rtype: array
+        """
+        pass
