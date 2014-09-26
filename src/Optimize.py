@@ -70,7 +70,20 @@ class Function:
         if self._g != None:
             return self._g(*params)
 
-        #Calculate the numerecial value of g
+        return self._secondOrderApprox(*params)
+
+    def _secondOrderApprox(self, *params):
+        gradient = np.empty(self._numargs)
+        delta = 1./1000.
+        for n in range(0, self._numargs-1):
+            tempParamsLeft = copy(params)
+            tempParamsRight = copy(params)
+            tempParamsLeft[n]+=delta
+            tempParamsRight[n]-=delta
+            deltaFunc = self._f(*tempParamsLeft) - self._f(*tempParamsright)
+            gradient[n] = deltaFunc/(2*delta)
+
+        return gradient
 
 class OptimizeNewton(Optimize):
     """This class finds the coordinates for the smallest value of a function.
