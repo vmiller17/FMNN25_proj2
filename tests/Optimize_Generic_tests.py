@@ -75,13 +75,3 @@ class TestNewtonStep:
 	@raises(TypeError)
 	def testArrayType(self):
 		self.testOptimize._step(1.)
-
-
-
-
-
-
-
-
-
-
