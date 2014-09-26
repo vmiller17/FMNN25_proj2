@@ -89,4 +89,8 @@ class TestApproximateHessian:
         del self.function
         del self.optimizer
 
-    def 
+    @raises(TypeError)
+    def testInputCheck(self):
+        self.optimizer._approxHessian(48.)
+
+    
