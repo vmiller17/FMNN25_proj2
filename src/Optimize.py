@@ -9,7 +9,8 @@ class Function:
 
     :param function f: The function which is to be optimised.
     :param function g: The gradient of f. This paramater is optional and if it
-    is not provided it will be calculated.
+    is not provided it will be calculated. If the gradient is provided by the
+    user it should return a numpy array of floats.
     :raises TypeError: If f and g does not have the same number of parameters.
     """
 
@@ -18,7 +19,7 @@ class Function:
         self._numArgs=len(inspect.getargspec(f)[0])
 
         if g != None and len(inspect.getargspec(g)[0]) != self._numArgs:
-            raise TypeError('f and g does not have the same number of
+            raise TypeError('f and g does not have the same number of \
             parameters')
         self._g=g
 
@@ -37,14 +38,14 @@ class Function:
             raise TypeError('params is not a numpy array')
         if not issubclass(params.dtype.type, float):
             raise TypeError('params does not contain floats')
-        if params.ndmin != 1:
+        if params.ndim != 1:
             raise TypeError('params is not one dimensional')
         if params.shape != (self._numArgs,):
-            raise ValueError('the number of elements in params are not
+            raise ValueError('the number of elements in params are not \
                     correct')
 
         return self._f(*params)
-    
+
     def evalGrad(self,params):
         """Evaluates the gradient of the function for the given paramaters.
 
@@ -60,13 +61,13 @@ class Function:
             raise TypeError('params is not a numpy array')
         if not issubclass(params.dtype.type, float):
             raise TypeError('params does not contain floats')
-        if params.ndmin != 1:
+        if params.ndim != 1:
             raise TypeError('params is not one dimensional')
         if params.shape != (self._numArgs,):
-            raise ValueError('the number of elements in params are not
+            raise ValueError('the number of elements in params are not \
                     correct')
 
         if self._g != None:
-            return g(*params)
+            return self._g(*params)
 
         #Calculate the numerecial value of g
