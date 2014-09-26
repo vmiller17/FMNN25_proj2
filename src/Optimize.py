@@ -79,16 +79,15 @@ class Function:
 class OptimBase(object):
     __metaclass__ = abc.ABCMeta
 
-    @abc.abstractmethod
+
     def __init__(tol=1e-6,maxIterations=200):
     self.tol = tol
     self.maxIterations = maxIterations
     self.currentValues = np.array([0,0,0])
 
-    @abc.abstractmethod
+
     def __call__(f,startValues):
 
 
-    @abc.abstractmethod
     def step(f):
 
