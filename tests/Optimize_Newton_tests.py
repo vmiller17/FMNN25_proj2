@@ -14,6 +14,20 @@ class TestSolveEquations:
         del self.optimizer
         del self.b
 
+    @raises(TypeError)
+    def testBNotArray(self):
+        A=np.array([[1.,2.],[2.,1.]])
+        self.optimizer._solveEquations(a,2.)
+
+    @raises(TypeError)
+    def testANotArray(self):
+        A=3.5
+        self.optimizer._solveEquations(A,b)
+
+    @raises(TypeError)
+    def testCorrectDimensions(self):
+        A=np.array([[1.,2.],[1.,2.]])
+
     @raises(ValueError)
     def testNotPositiveDefinite(self):
         A=np.array([[1.,2.,5.],[0.,-3.,6],[0.,0.,4]])
