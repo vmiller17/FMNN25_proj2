@@ -40,7 +40,7 @@ class TestNewtonCall:
 
     def testArrayContainsFloat(self):
 		val = self.testOptimize(self.testFunction,np.array([1.,1.]))
-		assert isinstance(val[0],float)
+		assert issubclass(val[0],float)
 
 	@raises(TypeError)
 	def testDimensions(self):

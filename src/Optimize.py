@@ -98,7 +98,7 @@ class OptimizeNewton(Optimize):
     """This class finds the coordinates for the smallest value of a function.
     """
 
-    def _solveEquations(self,A,b):
+    def _solveEquations(self,A,b): # Eli
         """Solves a system of equations on the form Ax=b, where A is a matrix
         and x and b are column matrices.
 
@@ -113,7 +113,7 @@ class OptimizeNewton(Optimize):
         """
         pass
 
-    def _approxHessian(self,f):
+    def _approxHessian(self,f): # Labinot
         """Approximates the hessian for a function f by using a finite
         differences scheme.
 
