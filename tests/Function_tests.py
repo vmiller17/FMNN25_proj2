@@ -4,6 +4,28 @@ from nose.tools import raises,with_setup
 import numpy as np
 import Problem_class
 
+class TestFunctionInit:
+
+	def f(self,x,y)
+		return (x**2)+(y**2)
+
+	def g(self,x,y)
+		return np.array([2*x,2*y])
+
+    @raises(TypeError)
+    def testFNotFunction(self):
+        self.testFunction = Function.Function(3.)
+	
+    @raises(TypeError)
+    def testGNotFunction(self):
+        self.testFunction = Function.Function(f,2.)
+
+    @raises(TypeError)
+    def testCorrectDimensions(self):
+		def gWrong(self,x,y,z)
+			return np.array([2*x,2*y,1])
+        self.testFunction = Function.Function(f,gWrong)
+
 class TestFunctionCall:
 
     def setUp(self):
@@ -38,30 +60,6 @@ class TestFunctionCall:
         j = self.testFunction(np.array([1.,2.]))
         assert j == 5
 
-
-class TestFunctionInit:
-
-	def f(self,x,y)
-		return (x**2)+(y**2)
-
-	def g(self,x,y)
-		return np.array([2*x,2*y])
-
-    @raises(TypeError)
-    def testFNotFunction(self):
-        self.testFunction = Function.Function(3.)
-	
-    @raises(TypeError)
-    def testGNotFunction(self):
-        self.testFunction = Function.Function(f,2.)
-
-    @raises(TypeError)
-    def testCorrectDimensions(self):
-		def gWrong(self,x,y,z)
-			return np.array([2*x,2*y,1])
-        self.testFunction = Function.Function(f,gWrong)
-
-
 class TestFunctionEvalGrad:
 
     def setUp(self):
@@ -82,7 +80,10 @@ class TestFunctionEvalGrad:
 
 	@raises(TypeError)
 	def testArrayType(self):
-		self.testFunction.evalgrad(np.array([1,2]))
+		self.testFunction.evalGrad(np.array([1,2]))
+
+	def testReturnArrayType(self):
+		assert isinstance(self.testFunction.evalGrad(np.array([1.,2.])),np.ndarray)
 
 
 
