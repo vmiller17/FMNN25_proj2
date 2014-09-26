@@ -27,6 +27,17 @@ class TestSolveEquations:
     @raises(TypeError)
     def testCorrectDimensions(self):
         A=np.array([[1.,2.],[1.,2.]])
+        self.optimizer._solveEquation(A,b)
+
+    @raises(TypeError)
+    def testAFloatArray(self):
+        A=np.array([[1,2],[2,3]])
+        self.optimizer._solveEquations(A,b)
+
+    def testBFloatArray(self):
+        A=np.array([[1.,2.],[1.,2.]])
+        b=np.array([1,3])
+        self.optimizer._solveEquations(A,b)
 
     @raises(ValueError)
     def testNotPositiveDefinite(self):
