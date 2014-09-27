@@ -91,7 +91,7 @@ class Function:
 
 
 
-class OptimBase(object):
+class OptimizeBase(object):
     __metaclass__ = abc.ABCMeta
 
 
@@ -107,7 +107,7 @@ class OptimBase(object):
     def step(f):
     pass 
 
-class OptimizeNewton(Optimize):
+class OptimizeNewton(OptimizeBase):
     """This class finds the coordinates for the smallest value of a function.
     """
 
