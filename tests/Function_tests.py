@@ -83,14 +83,15 @@ class TestFunctionEvalGrad:
 
 	@raises(TypeError)
 	def testDimensions(self):
-		self.testFunction.evalGrad(np.array([1.,2.,3.]))
+            self.testFunction.evalGrad(np.array([1.,2.,3.]))
 
 	@raises(TypeError)
 	def testArrayWithInt(self):
-		self.testFunction.evalGrad(np.array([1,2]))
+            self.testFunction.evalGrad(np.array([1,2]))
 
 	def testReturnArrayType(self):
-		assert isinstance(self.testFunction.evalGrad(np.array([1.,2.])),np.ndarray)
+            assert isinstance(self.testFunction.evalGrad(np.array([1.,2.])),
+                np.ndarray)
 
 
 
