@@ -2,7 +2,7 @@ import sys
 sys.path = sys.path + ['../']
 from nose.tools import raises,with_setup
 import numpy as np
-import Problem_class
+import OpitimizeNewton
 
 class TestSolveEquations:
 
@@ -74,25 +74,24 @@ class TestApproximateHessian:
         self.optimizer._approxHessian(48.)
 
     def testHessianContainsFloats(self):
-       c = self.optimizer._approxHessian(self.function))
+       c = self.optimizer._approxHessian(self.function)
        assert issubclass(c[0,0], float)
 	
     def testShapeHessian(self):
         assert (self.optimizer._approxHessian(self.function)).shape == (2,2)
 
-    def testApproxHessian(self): #Okänd tolerans, kan behöva justeras.
-		H = np.array([[2,0],[0,2]])
+    def testApproxHessian(self): #Okand tolerans, kan behova justeras.
+        H = np.array([[2,0],[0,2]])
         approx=self.optimizer._approxHessian(self.function)
         assert np.allclose(H,approx)
 
-	@raise(ValueError)
-	def testNotPositiveDefinite(self):
-		def f(x,y):
+    @raises(ValueError)
+    def testNotPositiveDefinite(self):
+        def f(x,y):
             return x**2 + 3*x*y + y**2
-
         self.function1=Function.Function(f)
         self.optimizer1=OptimizeNewton.OptimizeNewton()
-		self.optimizer1._approxHessian(f) # Den funktionen ska kolla om f ger upphov till en s.p.d. hessian
+        self.optimizer1._approxHessian(f) # Den funktionen ska kolla om f ger upphov till en s.p.d. hessian
 		
 
 

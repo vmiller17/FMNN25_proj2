@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.linalg as sl
 import inspect
 import abc
 
@@ -121,10 +122,20 @@ class OptimizeNewton(OptimizeBase):
         :rtype: array
         :raises TypeError: If the matrices are not numpy arrays, containing
         floats and have the right dimensions.
-        :raises ValueError: If the number of rows in are not the same as the
+        :raises ValueError: If the number of rows in A are not the same as the
         number of elements in b.
         """
-        pass
+        if not isinstance(A, np.ndarray):  
+            raise TypeError("A must be a numpy array")
+        if not isinstance(b, np.ndarray):  
+            raise TypeError("b must be a numpy array")
+        if not issubclass(A.dtype.type,float):
+            raise TypeError("A must be an array of floats") 
+        if not issubclass(b.dtype.type,float):
+            raise TypeError("b must be an array of floats") 
+        if A.shape[0] != len(b):
+            raise ValueError("A should have as many rows as b has elements.")
+        return sl.solve(A, b)
 
     def _approxHessian(self,f): # Labinot
         """Approximates the hessian for a function f by using a finite
