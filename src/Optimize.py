@@ -75,14 +75,14 @@ class Function:
         return self._secondOrderApprox(*params)
 
     def _secondOrderApprox(self, *params):
-        gradient = np.empty(self._numargs)
+        gradient = np.empty(self._numArgs)
         delta = 1.e-6
-        for n in range(0, self._numargs-1):
+        for n in range(0, self._numArgs-1):
             tempParamsLeft = copy(params)
             tempParamsRight = copy(params)
             tempParamsLeft[n]+=delta
             tempParamsRight[n]-=delta
-            deltaFunc = self._f(*tempParamsLeft) - self._f(*tempParamsright)
+            deltaFunc = self._f(*tempParamsLeft) - self._f(*tempParamsRight)
             gradient[n] = deltaFunc/(2*delta)
 
         return gradient
