@@ -108,7 +108,8 @@ class OptimizeBase(object):
     pass 
 
 class OptimizeNewton(OptimizeBase):
-    """This class finds the coordinates for the smallest value of a function.
+    """This class finds the coordinates for the smallest value of a function by
+    using Newtons method.
     """
 
     def _solveEquations(self,A,b): # Eli
