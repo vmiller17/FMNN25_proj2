@@ -1,39 +1,46 @@
 import sys
-sys.path = sys.path + ['../']
-from nose.tools import raises,with_setup
+sys.path = sys.path + ['../src']
+from nose.tools import raises
 import numpy as np
-import Problem_class
+import Optimize
 
 class TestFunctionInit:
+    
+    def setUp(self):
+        def f(x,y):
+            return (x**2)+(y**2)
+        self.f=f
 
-	def f(self,x,y)
-		return (x**2)+(y**2)
+        def g(x,y):
+            return np.array([2*x,2*y])
+        self.g=g
 
-	def g(self,x,y)
-		return np.array([2*x,2*y])
+    def tearDown(self):
+        del self.f
+        del self.g
 
     @raises(TypeError)
     def testFNotFunction(self):
-        self.testFunction = Function.Function(3.)
+        self.testFunction = Optimize.Function(3.)
 	
     @raises(TypeError)
     def testGNotFunction(self):
-        self.testFunction = Function.Function(f,2.)
+        self.testFunction = Optimize.Function(self.f,2.)
 
     @raises(TypeError)
     def testCorrectDimensions(self):
-		def gWrong(self,x,y,z)
-			return np.array([2*x,2*y,1])
-        self.testFunction = Function.Function(f,gWrong)
+        def gWrong(self,x,y,z):
+            return np.array([2*x,2*y,1])
+        self.testFunction = Optimize.Function(self.f,gWrong)
 
 class TestFunctionCall:
 
     def setUp(self):
-		def f(self,x,y)
-			return (x**2)+(y**2)
-		def g(self,x,y)
-			return np.array([2*x,2*y])
-        self.testFunction = Function.Function(f,g)
+        def f(x,y):
+            return (x**2)+(y**2)
+        def g(x,y):
+            return np.array([2*x,2*y])
+        self.testFunction = Optimize.Function(f,g)
 
     def tearDown(self):
         del self.testFunction
@@ -63,9 +70,9 @@ class TestFunctionCall:
 class TestFunctionEvalGrad:
 
     def setUp(self):
-		def f(self,x,y)
-			return (x**2)+(y**2)
-        self.testFunction = Function.Function(f)
+        def f(x,y):
+            return (x**2)+(y**2)
+        self.testFunction = Optimize.Function(f)
 
     def tearDown(self):
         del self.testFunction
