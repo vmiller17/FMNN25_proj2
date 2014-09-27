@@ -32,8 +32,8 @@ class Function:
         function is to be evaluated. All values must be floats.
         :returns: The value for the function.
         :rtype: float
-        :raises TypeError: If params is not a numpy array or if it does not
-        contain floats.
+        :raises TypeError: If params is not a numpy array, if params does not
+        contain floats or if it is of the wrong size/dimension.
         """
 
         if not isinstance(params,np.ndarray):
@@ -43,7 +43,7 @@ class Function:
         if params.ndim != 1:
             raise TypeError('params is not one dimensional')
         if params.shape != (self._numArgs,):
-            raise ValueError('the number of elements in params are not \
+            raise TypeError('the number of elements in params are not \
                     correct')
 
         return self._f(*params)
@@ -55,8 +55,8 @@ class Function:
         function is to be evaluated. All values must be floats.
         :returns: The value for the gradient of the function.
         :rtype: float
-        :raises TypeError: If params is not a numpy array or if it does not
-        contain floats.
+        :raises TypeError: If params is not a numpy array, if params does not
+        contain floats or if it is of the wrong size/dimension.
         """
 
         if not isinstance(params,np.ndarray):
@@ -66,7 +66,7 @@ class Function:
         if params.ndim != 1:
             raise TypeError('params is not one dimensional')
         if params.shape != (self._numArgs,):
-            raise ValueError('the number of elements in params are not \
+            raise TypeError('the number of elements in params are not \
                     correct')
 
         if self._g != None:
