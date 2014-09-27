@@ -78,8 +78,8 @@ class Function:
         gradient = np.empty(self._numArgs)
         delta = 1.e-6
         for n in range(0, self._numArgs-1):
-            tempParamsLeft = copy(params)
-            tempParamsRight = copy(params)
+            tempParamsLeft = list(params)
+            tempParamsRight = list(params)
             tempParamsLeft[n]+=delta
             tempParamsRight[n]-=delta
             deltaFunc = self._f(*tempParamsLeft) - self._f(*tempParamsRight)
