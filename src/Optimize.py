@@ -96,16 +96,15 @@ class OptimizeBase(object):
 
 
     def __init__(tol=1e-6,maxIterations=200):
-    self.tol = tol
-    self.maxIterations = maxIterations
-    self.currentValues = np.array([0,0,0])
-    return
+        self.tol = tol
+        self.maxIterations = maxIterations
+        self.currentValues = np.array([0,0,0])
 
     def __call__(f,startValues):
-    pass
+        pass
 
     def step(f):
-    pass 
+        pass 
 
 class OptimizeNewton(OptimizeBase):
     """This class finds the coordinates for the smallest value of a function by
