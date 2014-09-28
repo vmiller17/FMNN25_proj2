@@ -149,14 +149,14 @@ class OptimizeNewton(OptimizeBase):
             raise TypeError("f must be an instance of the Function class")
             
         params = self.currentValues     
-        delta = 1.e-6
+        delta = self.tol
         dim = self._numArgs
         hessian = np.zeros((dim,dim))    
         for n in xrange(dim):
             for m in xrange(dim):
-                tempParams = list([params,params])
-                tempParamsLeft = list([params,params])
-                tempParamsRight = list([params,params])
+                tempParams = np.array([params,params])
+                tempParamsLeft = np.array([params,params])
+                tempParamsRight = np.array([params,params])
                 tempParamsLeft[n,m]+=delta
                 tempParamsRight[n,m]-=delta
         
