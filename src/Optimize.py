@@ -159,6 +159,13 @@ class OptimizeNewton(OptimizeBase):
                 dxi[n],dxj[m] = delta,delta
                 hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj))
                 - f(*(val-dxi+dxj))  + f(*(val-dxi-dxj)))/(4*delta**2)     
+                if n != m:
+                    hessian[m,n] = hessian[n,m]
+        hessian = (hessian + np.transpose(hessian))/2
+        try:
+            sl.cholesky(hessian)
+        except sl.LinAlgError:
+            print "Matrix is not positive definite"        
         return hessian
     
 
