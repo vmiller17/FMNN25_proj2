@@ -155,10 +155,10 @@ class OptimizeNewton(OptimizeBase):
         
         for n in xrange(dim):
             for m in xrange(n,dim):               
-                dxi,dxj = np.zeros(dim),np.zeros(dim)
-                dxi[n],dxj[m] = delta,delta
+                dxi = dxj = np.zeros(dim)
+                dxi[n] = dxj[m] = delta
                 hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj))
-                - f(*(val-dxi+dxj))  + f(*(val-dxi-dxj)))/(4*delta**2)     
+                - f(*(val-dxi+dxj)) + f(*(val-dxi-dxj)))/(4*delta**2)     
                 if n != m:
                     hessian[m,n] = hessian[n,m]
         hessian = (hessian + np.transpose(hessian))/2
