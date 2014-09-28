@@ -90,13 +90,11 @@ class Function:
 
 
 
-
-
 class OptimizeBase(object):
     __metaclass__ = abc.ABCMeta
 
 
-    def __init__(tol=1e-6,maxIterations=200):
+    def __init__(self,tol=1e-6,maxIterations=200):
         self.tol = tol
         self.maxIterations = maxIterations
         self.currentValues = np.array([0,0,0])
@@ -147,4 +145,27 @@ class OptimizeNewton(OptimizeBase):
         :returns: The approximated Hessian. 
         :rtype: array
         """
-        pass
+        if not isinstance(f, Function.Function):  
+            raise TypeError("f must be an instance of the Function class")
+            
+        params = self.currentValues     
+        delta = 1.e-6
+        dim = self._numArgs
+        hessian = np.zeros((dim,dim))    
+        for n in xrange(dim):
+            for m in xrange(dim):
+                tempParams = list([params,params])
+                tempParamsLeft = list([params,params])
+                tempParamsRight = list([params,params])
+                tempParamsLeft[n,m]+=delta
+                tempParamsRight[n,m]-=delta
+        
+        deltaFunc = self._f(*tempParamsLeft) - dim*self._f(*tempParams)
+        + self._f(*tempParamsRight)
+        hessian[n,m] = deltaFunc/(4*delta**2)
+        
+        return hessian
+        
+
+
+        
