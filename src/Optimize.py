@@ -148,23 +148,21 @@ class OptimizeNewton(OptimizeBase):
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
             
-        params = self.currentValues     
-        delta = self.tol
+        delta = self.tol    
+        val = self.currentValues
         dim = f._numArgs
-        hessian = np.zeros((dim,dim))    
-        tempParams = np.array([params,params])
-        tempParamsLeft = np.array([params,params])
-        tempParamsRight = np.array([params,params])  
+        hessian = np.zeros([dim,dim])
         
         for n in xrange(dim):
-            for m in xrange(dim):
-                tempParamsLeft[n,m]+=delta
-                tempParamsRight[n,m]-=delta        
-                deltaFunc = f(*tempParamsLeft) - dim*f(*tempParams) + f(*tempParamsRight)
-                hessian[n] = deltaFunc/(4*delta**2)
-            
+            for m in xrange(n,dim):               
+                dxi,dxj = np.zeros(dim),np.zeros(dim)
+                dxi[n],dxj[m] = delta,delta
+                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj))
+                - f(*(val-dxi+dxj))  + f(*(val-dxi-dxj)))/(4*delta**2)     
         return hessian
-        
+    
+
+            
 
 
         
