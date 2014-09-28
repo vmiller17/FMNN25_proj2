@@ -145,25 +145,24 @@ class OptimizeNewton(OptimizeBase):
         :returns: The approximated Hessian. 
         :rtype: array
         """
-        if not isinstance(f, Function.Function):  
+        if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
             
         params = self.currentValues     
-        delta = 1.e-6
-        dim = self._numArgs
+        delta = self.tol
+        dim = f._numArgs
         hessian = np.zeros((dim,dim))    
+        tempParams = np.array([params,params])
+        tempParamsLeft = np.array([params,params])
+        tempParamsRight = np.array([params,params])  
+        
         for n in xrange(dim):
             for m in xrange(dim):
-                tempParams = list([params,params])
-                tempParamsLeft = list([params,params])
-                tempParamsRight = list([params,params])
                 tempParamsLeft[n,m]+=delta
-                tempParamsRight[n,m]-=delta
-        
-        deltaFunc = self._f(*tempParamsLeft) - dim*self._f(*tempParams)
-        + self._f(*tempParamsRight)
-        hessian[n,m] = deltaFunc/(4*delta**2)
-        
+                tempParamsRight[n,m]-=delta        
+                deltaFunc = f(*tempParamsLeft) - dim*f(*tempParams) + f(*tempParamsRight)
+                hessian[n] = deltaFunc/(4*delta**2)
+            
         return hessian
         
 
