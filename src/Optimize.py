@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.linalg as sl
 import inspect
 import abc
 
@@ -32,8 +33,8 @@ class Function:
         function is to be evaluated. All values must be floats.
         :returns: The value for the function.
         :rtype: float
-        :raises TypeError: If params is not a numpy array or if it does not
-        contain floats.
+        :raises TypeError: If params is not a numpy array, if params does not
+        contain floats or if it is of the wrong size/dimension.
         """
 
         if not isinstance(params,np.ndarray):
@@ -43,7 +44,7 @@ class Function:
         if params.ndim != 1:
             raise TypeError('params is not one dimensional')
         if params.shape != (self._numArgs,):
-            raise ValueError('the number of elements in params are not \
+            raise TypeError('the number of elements in params are not \
                     correct')
 
         return self._f(*params)
@@ -55,8 +56,8 @@ class Function:
         function is to be evaluated. All values must be floats.
         :returns: The value for the gradient of the function.
         :rtype: float
-        :raises TypeError: If params is not a numpy array or if it does not
-        contain floats.
+        :raises TypeError: If params is not a numpy array, if params does not
+        contain floats or if it is of the wrong size/dimension.
         """
 
         if not isinstance(params,np.ndarray):
@@ -66,7 +67,7 @@ class Function:
         if params.ndim != 1:
             raise TypeError('params is not one dimensional')
         if params.shape != (self._numArgs,):
-            raise ValueError('the number of elements in params are not \
+            raise TypeError('the number of elements in params are not \
                     correct')
 
         if self._g != None:
@@ -75,14 +76,14 @@ class Function:
         return self._secondOrderApprox(*params)
 
     def _secondOrderApprox(self, *params):
-        gradient = np.empty(self._numargs)
+        gradient = np.empty(self._numArgs)
         delta = 1.e-6
-        for n in range(0, self._numargs-1):
-            tempParamsLeft = copy(params)
-            tempParamsRight = copy(params)
+        for n in range(0, self._numArgs-1):
+            tempParamsLeft = list(params)
+            tempParamsRight = list(params)
             tempParamsLeft[n]+=delta
             tempParamsRight[n]-=delta
-            deltaFunc = self._f(*tempParamsLeft) - self._f(*tempParamsright)
+            deltaFunc = self._f(*tempParamsLeft) - self._f(*tempParamsRight)
             gradient[n] = deltaFunc/(2*delta)
 
         return gradient
@@ -91,16 +92,22 @@ class Function:
 
 
 
-class Optimize(object):
+
+
+
+class OptimizeBase(object):
+
     __metaclass__ = abc.ABCMeta
     """This class is inherited by future implementaions of solvers
     """
 
 
     def __init__(self,tol=1e-6,maxIterations=200):
+
         self._tol=tol
         self._maxIterations = maxIterations
         self._currentValues = np.array([0,0,0])
+
 
     def __call__(f,startValues):
         pass
@@ -108,11 +115,12 @@ class Optimize(object):
     def step(f):
         pass 
 
-class OptimizeNewton(Optimize):
-    """This class finds the coordinates for the smallest value of a function.
+class OptimizeNewton(OptimizeBase):
+    """This class finds the coordinates for the smallest value of a function by
+    using Newtons method.
     """
 
-    def _solveEquations(self,A,b):
+    def _solveEquations(self,A,b): # Eli
         """Solves a system of equations on the form Ax=b, where A is a matrix
         and x and b are column matrices.
 
@@ -122,12 +130,22 @@ class OptimizeNewton(Optimize):
         :rtype: array
         :raises TypeError: If the matrices are not numpy arrays, containing
         floats and have the right dimensions.
-        :raises ValueError: If the number of rows in are not the same as the
+        :raises ValueError: If the number of rows in A are not the same as the
         number of elements in b.
         """
-        pass
+        if not isinstance(A, np.ndarray):  
+            raise TypeError("A must be a numpy array")
+        if not isinstance(b, np.ndarray):  
+            raise TypeError("b must be a numpy array")
+        if not issubclass(A.dtype.type,float):
+            raise TypeError("A must be an array of floats") 
+        if not issubclass(b.dtype.type,float):
+            raise TypeError("b must be an array of floats") 
+        if A.shape[0] != len(b):
+            raise ValueError("A should have as many rows as b has elements.")
+        return sl.solve(A, b)
 
-    def _approxHessian(self,f):
+    def _approxHessian(self,f): # Labinot
         """Approximates the hessian for a function f by using a finite
         differences scheme.
 
@@ -137,4 +155,31 @@ class OptimizeNewton(Optimize):
         :returns: The approximated Hessian. 
         :rtype: array
         """
-        pass
+        if not isinstance(f, Function):  
+            raise TypeError("f must be an instance of the Function class")
+            
+        delta = self.tol    
+        val = self.currentValues
+        dim = f._numArgs
+        hessian = np.zeros([dim,dim])
+        
+        for n in xrange(dim):
+            for m in xrange(n,dim):               
+                dxi = dxj = np.zeros(dim)
+                dxi[n] = dxj[m] = delta
+                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj))
+                - f(*(val-dxi+dxj)) + f(*(val-dxi-dxj)))/(4*delta**2)     
+                if n != m:
+                    hessian[m,n] = hessian[n,m]
+        hessian = (hessian + np.transpose(hessian))/2
+        try:
+            sl.cholesky(hessian)
+        except sl.LinAlgError:
+            print "Matrix is not positive definite"        
+        return hessian
+    
+
+            
+
+
+        

@@ -1,10 +1,17 @@
 import sys
-sys.path = sys.path + ['../']
-from nose.tools import raises,with_setup
+sys.path = sys.path + ['../src']
+from nose.tools import raises
 import numpy as np
-import Optimize as Function 
+import Optimize
+
 
 class TestFunctionInit:
+    
+    def setUp(self):
+        def f(x,y):
+            return (x**2)+(y**2)
+        self.f=f
+
 
     def f(self,x,y):
 	return (x**2)+(y**2)
@@ -12,28 +19,31 @@ class TestFunctionInit:
     def g(self,x,y):
 	return np.array([2*x,2*y])
 
+
     @raises(TypeError)
     def testFNotFunction(self):
-        self.testFunction = Function.Function(3.)
+        self.testFunction = Optimize.Function(3.)
 	
     @raises(TypeError)
     def testGNotFunction(self):
-        self.testFunction = Function.Function(f,2.)
+        self.testFunction = Optimize.Function(self.f,2.)
 
     @raises(TypeError)
     def testCorrectDimensions(self):
-	def gWrong(self,x,y,z):
-			return np.array([2*x,2*y,1])
-        self.testFunction = Function.Function(f,gWrong)
+        def gWrong(self,x,y,z):
+            return np.array([2*x,2*y,1])
+        self.testFunction = Optimize.Function(self.f,gWrong)#This could be wrong, got merge conflicts. Trying to solve //Victor
+
 
 class TestFunctionCall:
 
     def setUp(self):
-	def f(self,x,y):
-	    return (x**2)+(y**2)
-        def g(self,x,y):
-	    return np.array([2*x,2*y])
-        self.testFunction = Function.Function(f,g)
+        def f(x,y):
+            return (x**2)+(y**2)
+        def g(x,y):
+            return np.array([2*x,2*y])
+        self.testFunction = Optimize.Function(f,g)
+
 
     def tearDown(self):
         del self.testFunction
@@ -63,9 +73,10 @@ class TestFunctionCall:
 class TestFunctionEvalGrad:
 
     def setUp(self):
-	def f(self,x,y):
+        def f(x,y):
             return (x**2)+(y**2)
-        self.testFunction = Function.Function(f)
+        self.testFunction = Optimize.Function(f)
+
 
     def tearDown(self):
         del self.testFunction
@@ -73,6 +84,7 @@ class TestFunctionEvalGrad:
     def testCorrectValue(self):
         j = self.testFunction.evalGrad(np.array([1.,1.]))
         assert np.allclose(j,np.array([2.,2.]))
+
 
     @raises(TypeError)
     def testDimensions(self):
@@ -84,9 +96,6 @@ class TestFunctionEvalGrad:
 
     def testReturnArrayType(self):
 	assert isinstance(self.testFunction.evalGrad(np.array([1.,2.])),np.ndarray)
-
-
-
 
 
 
