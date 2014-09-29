@@ -2,15 +2,15 @@ import sys
 sys.path = sys.path + ['../']
 from nose.tools import raises,with_setup
 import numpy as np
-import Problem_class
+import Optimize as Function 
 
 class TestFunctionInit:
 
-	def f(self,x,y)
-		return (x**2)+(y**2)
+    def f(self,x,y):
+	return (x**2)+(y**2)
 
-	def g(self,x,y)
-		return np.array([2*x,2*y])
+    def g(self,x,y):
+	return np.array([2*x,2*y])
 
     @raises(TypeError)
     def testFNotFunction(self):
@@ -22,17 +22,17 @@ class TestFunctionInit:
 
     @raises(TypeError)
     def testCorrectDimensions(self):
-		def gWrong(self,x,y,z)
+	def gWrong(self,x,y,z):
 			return np.array([2*x,2*y,1])
         self.testFunction = Function.Function(f,gWrong)
 
 class TestFunctionCall:
 
     def setUp(self):
-		def f(self,x,y)
-			return (x**2)+(y**2)
-		def g(self,x,y)
-			return np.array([2*x,2*y])
+	def f(self,x,y):
+	    return (x**2)+(y**2)
+        def g(self,x,y):
+	    return np.array([2*x,2*y])
         self.testFunction = Function.Function(f,g)
 
     def tearDown(self):
@@ -63,8 +63,8 @@ class TestFunctionCall:
 class TestFunctionEvalGrad:
 
     def setUp(self):
-		def f(self,x,y)
-			return (x**2)+(y**2)
+	def f(self,x,y):
+            return (x**2)+(y**2)
         self.testFunction = Function.Function(f)
 
     def tearDown(self):
@@ -74,16 +74,16 @@ class TestFunctionEvalGrad:
         j = self.testFunction.evalGrad(np.array([1.,1.]))
         assert np.allclose(j,np.array([2.,2.]))
 
-	@raises(TypeError)
-	def testDimensions(self):
-		self.testFunction.evalGrad(np.array([1.,2.,3.]))
+    @raises(TypeError)
+    def testDimensions(self):
+        self.testFunction.evalGrad(np.array([1.,2.,3.]))
 
-	@raises(TypeError)
-	def testArrayWithInt(self):
-		self.testFunction.evalGrad(np.array([1,2]))
+    @raises(TypeError)
+    def testArrayWithInt(self):
+        self.testFunction.evalGrad(np.array([1,2]))
 
-	def testReturnArrayType(self):
-		assert isinstance(self.testFunction.evalGrad(np.array([1.,2.])),np.ndarray)
+    def testReturnArrayType(self):
+	assert isinstance(self.testFunction.evalGrad(np.array([1.,2.])),np.ndarray)
 
 
 
