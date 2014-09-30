@@ -70,7 +70,7 @@ class Function:
             raise TypeError('the number of elements in params are not \
                     correct')
 
-        if self._g is not None:
+        if self._g != None:
             return self._g(*params)
 
         return self._secondOrderApprox(*params)
@@ -109,40 +109,13 @@ class OptimizeBase(object):
         self._currentValues = np.array([0,0,0])
 
 
-    def __call__(self,f,startValues):
+
+
+    def __call__(f,startValues):
         pass
 
-    def _step(self,f):
+    def step(f):
         pass 
-
-    @staticmethod
-    def inexactLineSearch(f,S):
-        """This method performs an inexact line search based on the method
-        proposed by R. Fletcher, *Practical Methods of Optimization*, vol. 1,
-        Wiley, New York, 1980.
-
-        :param Function f: The function for which the linesearch is to be
-        performed.
-        :param array S: The direction along which the step is to be taken, in
-        the form of a numpy array containing floats.
-        :returns: The step length.
-        :rtype: float
-        :raises TypeError: If the inparamaters are of the wrong data type, if
-        the size of S is not the same as the number of arguments of f or if S
-        is not a one dimensional array.
-        """
-        if(not isinstance(f,Function)):
-            raise TypeError('f is not a Function object')
-        if(not isinstance(S,np.ndarray)):
-            raise TypeError('S is not a numpy array')
-        if(not issubclass(S.dtype.type,float)):
-            raise TypeError('S does not contain floats')
-        if(not S.ndim == 1):
-            raise TypeError('S must be one dimensional')
-        if(not S.size == f._numArgs):
-            raise TypeError('S must be one dimensional')
-
-        return 1
 
 class OptimizeNewton(OptimizeBase):
     """This class finds the coordinates for the smallest value of a function by
@@ -187,8 +160,8 @@ class OptimizeNewton(OptimizeBase):
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
             
-        delta = self._tol    
-        val = self._currentValues
+        delta = self.tol    
+        val = self.currentValues
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
         
@@ -196,30 +169,19 @@ class OptimizeNewton(OptimizeBase):
             for m in xrange(n,dim):               
                 dxi = dxj = np.zeros(dim)
                 dxi[n] = dxj[m] = delta
-            if n == m:
-                hessian[n,m] = (f(*(val+dxj)) - 2*f(*val) + f(*(val-dxj)))/(delta**2)
-            else:
-                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj)) - f(*(val-dxi+dxj)) 
-                + f(*(val-dxi-dxj)))/(2*delta**2)
+                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj))
+                - f(*(val-dxi+dxj)) + f(*(val-dxi-dxj)))/(4*delta**2)     
+                if n != m:
+                    hessian[m,n] = hessian[n,m]
         hessian = (hessian + np.transpose(hessian))/2
         try:
             sl.cholesky(hessian)
         except sl.LinAlgError:
-            print "Matrix is not positive definite"
-            return None
+            print "Matrix is not positive definite"        
         return hessian
+    
 
-class OptimizeDFP(OptimizeBase):
+            
 
-    def _approximateHessian(self, f, hessian):
-        if not (isinstance(f, Function)):
-            raise TypeError("f must be an instance of the function class")
 
-        delta = np.array([self._currentValues - self._previousValues])
-        gamma = np.array([f.evalGrad(self._currentValues) - f.evalGrad(self._previousValues)])
-
-        #denominator = np.dot(delta, np.transpose(gamma))
-        term1 = np.dot(np.transpose(delta), delta) / np.dot(delta,np.transpose(gamma))
-        term2 = np.dot(np.dot(hessian,np.transpose(gamma)),np.dot(gamma,hessian))
-        denominator = np.dot(np.dot(gamma, hessian),np.transpose(gamma))
-        return hessian + term1 + term2 / denominator
+        
