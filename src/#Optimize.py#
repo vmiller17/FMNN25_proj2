@@ -70,7 +70,7 @@ class Function:
             raise TypeError('the number of elements in params are not \
                     correct')
 
-        if self._g is not None:
+        if self._g != None:
             return self._g(*params)
 
         return self._secondOrderApprox(*params)
@@ -107,6 +107,8 @@ class OptimizeBase(object):
         self._tol=tol
         self._maxIterations = maxIterations
         self._currentValues = np.array([0,0,0])
+
+
 
 
     def __call__(f,startValues):
@@ -177,18 +179,9 @@ class OptimizeNewton(OptimizeBase):
         except sl.LinAlgError:
             print "Matrix is not positive definite"        
         return hessian
+    
 
-class OptimizeDFP(OptimizeBase):
+            
 
-    def _approximateHessian(self, f, hessian):
-        if not (isinstance(f, Function)):
-            raise TypeError("f must be an instance of the function class")
 
-        delta = np.array([self._currentValues - self._previousValues])
-        gamma = np.array([f.evalGrad(self._currentValues) - f.evalGrad(self._previousValues)])
-
-        #denominator = np.dot(delta, np.transpose(gamma))
-        term1 = np.dot(np.transpose(delta), delta) / np.dot(delta,np.transpose(gamma))
-        term2 = np.dot(np.dot(hessian,np.transpose(gamma)),np.dot(gamma,hessian))
-        denominator = np.dot(np.dot(gamma, hessian),np.transpose(gamma))
-        return hessian + term1 + term2 / denominator
+        

@@ -64,7 +64,7 @@ class TestApproximateHessian:
             return np.array([2*x,2*y])
 
         self.function=Function.Function(f,g)
-        self.optimizer=OptimizeNewton.OptimizeNewton()
+        self.optimizer= OptimizeNewton
 
     def tearDown(self):
         del self.function
@@ -90,7 +90,7 @@ class TestApproximateHessian:
         def f(x,y):
             return x**2 + 3*x*y + y**2
         self.function1=Function.Function(f)
-        self.optimizer1=OptimizeNewton.OptimizeNewton()
+        self.optimizer1= OptimizeNewton
         self.optimizer1._approxHessian(f) # Den funktionen ska kolla om f ger upphov till en s.p.d. hessian
 		
 
