@@ -112,7 +112,7 @@ class OptimizeBase(object):
     def __call__(f,startValues):
         pass
 
-    def step(f):
+    def _step(f):
         pass 
 
 class OptimizeNewton(OptimizeBase):
