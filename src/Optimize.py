@@ -158,8 +158,8 @@ class OptimizeNewton(OptimizeBase):
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
             
-        delta = self.tol    
-        val = self.currentValues
+        delta = self._tol    
+        val = self._currentValues
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
         
