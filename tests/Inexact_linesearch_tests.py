@@ -13,6 +13,7 @@ class TestTypeChecks:
         def f(x,y):
             return (x**2)+(y**2)
         self.f = Optimize.Function(f)
+        self.x = np.array([1.0,1.0])
     def tearDown(self):
         del self.f
 
@@ -21,30 +22,48 @@ class TestTypeChecks:
         """Should raise a TypeError because f is not of type Function"""
         def f(x):
             return x
-        Optimize.OptimizeBase.inexactLineSearch(f,np.array([1.0]))
+        Optimize.OptimizeBase.inexactLineSearch(f,self.x,np.array([1.0]))
 
     @raises(TypeError)
     def testSNotArray(self):
         """Should raise a TypeError because S is not a numpy array"""
-        Optimize.OptimizeBase.inexactLineSearch(self.f,[1.0,2.0])
+        Optimize.OptimizeBase.inexactLineSearch(self.f,self.x,[1.0,2.0])
 
     @raises(TypeError)
     def testSNotFloats(self):
         """Should raise a TypeError because S does not contain floats"""
-        Optimize.OptimizeBase.inexactLineSearch(self.f,np.array([1, 2],
+        Optimize.OptimizeBase.inexactLineSearch(self.f,self.x,np.array([1, 2],
             dtype=int))
 
     @raises(TypeError)
     def testSWrongSize(self):
         """No TypeError when size of S and arguments of f differs"""
-        Optimize.OptimizeBase.inexactLineSearch(self.f,np.array([1,2,3],
+        Optimize.OptimizeBase.inexactLineSearch(self.f,self.x,np.array([1,2,3],
             dtype=float))
 
     @raises(TypeError)
     def testSWrongDimension(self):
         """Should raise a TypeError because S is not one dimensional"""
-        Optimize.OptimizeBase.inexactLineSearch(self.f,np.array([[1,2]],
+        Optimize.OptimizeBase.inexactLineSearch(self.f,self.x,np.array([[1,2]],
             dtype=float))
+
+    @raises(TypeError)
+    def testXNotFloats(self):
+        """Should raise a TypeError because x does not contain floats"""
+        Optimize.OptimizeBase.inexactLineSearch(self.f,np.array([1,2],dtype=int
+            ),np.array([[1,2]], dtype=float))
+
+    @raises(TypeError)
+    def testXWrongDimension(self):
+        """Should raise a TypeError because x is not one dimensional"""
+        Optimize.OptimizeBase.inexactLineSearch(self.f,np.array([[1.0,2.0]],
+            ),np.array([[1,2]], dtype=float))
+
+    @raises(TypeError)
+    def testXWrongSize(self):
+        """No TypeError when size of x and arguments of f differs"""
+        Optimize.OptimizeBase.inexactLineSearch(self.f,np.array([1.0],
+            ),np.array([[1,2]], dtype=float))
 
 class TestRunningInexactLS:
     """These tests evaluates different running scenarios using inexact line
@@ -77,9 +96,9 @@ class TestRunningInexactLS:
 
         for i in range(100):
             g = self.f.evalGrad(x)
-            S = np.linalg.inv(self.H(*x)).dot(g)
-            alpha = Optimize.OptimizeBase.inexactLineSearch(self.f,S)
-            x = x - alpha*S
+            S = -np.linalg.inv(self.H(*x)).dot(g)
+            alpha = Optimize.OptimizeBase.inexactLineSearch(self.f,x,S)
+            x = x + alpha*S
 
         assert np.isclose(self.f(x),-2)
 
@@ -89,17 +108,18 @@ class TestRunningInexactLS:
         x = np.array([2,2],dtype=float)
         while(not np.isclose(self.f(x),-2)):
             g = self.f.evalGrad(x)
-            S = np.linalg.inv(self.H(*x)).dot(g)
-            x = x - S
+            S = -np.linalg.inv(self.H(*x)).dot(g)
+            x = x + S
             i = i + 1
 
         j=0
         x = np.array([2,2],dtype=float)
         while(not np.isclose(self.f(x),-2)):
             g = self.f.evalGrad(x)
-            S = np.linalg.inv(self.H(*x)).dot(g)
-            alpha = Optimize.OptimizeBase.inexactLineSearch(self.f,S)
-            x = x - alpha*S
+            S = - np.linalg.inv(self.H(*x)).dot(g)
+            alpha = Optimize.OptimizeBase.inexactLineSearch(self.f,x,S)
+            x = x + alpha*S
             j = j + 1
+            if (j>i): break
 
         assert j<i
