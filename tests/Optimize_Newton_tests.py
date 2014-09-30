@@ -17,27 +17,28 @@ class TestSolveEquations:
     @raises(TypeError)
     def testBNotArray(self):
         A=np.array([[1.,2.],[2.,1.]])
-        self.optimizer._solveEquations(a,2.)
+        self.optimizer._solveEquations(A,2.)
 
     @raises(TypeError)
     def testANotArray(self):
         A=3.5
-        self.optimizer._solveEquations(A,b)
+        self.optimizer._solveEquations(A,self.b)
 
-    @raises(TypeError)
+    @raises(ValueError)
     def testCorrectDimensions(self):
         A=np.array([[1.,2.],[1.,2.]])
-        self.optimizer._solveEquation(A,b)
+        self.optimizer._solveEquations(A,self.b)
 
     @raises(TypeError)
     def testAFloatArray(self):
         A=np.array([[1,2],[2,3]])
-        self.optimizer._solveEquations(A,b)
+        self.optimizer._solveEquations(A,self.b)
 
+    @raises(TypeError)
     def testBFloatArray(self):
         A=np.array([[1.,2.],[1.,2.]])
-        b=np.array([1,3])
-        self.optimizer._solveEquations(A,b)
+        c=np.array([1,3])
+        self.optimizer._solveEquations(A, c)
 
     @raises(ValueError)
     def testNotPositiveDefinite(self):
