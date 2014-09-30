@@ -109,10 +109,10 @@ class OptimizeBase(object):
         self._currentValues = np.array([0,0,0])
 
 
-    def __call__(f,startValues):
+    def __call__(self,f,startValues):
         pass
 
-    def _step(f):
+    def _step(self,f):
         pass 
 
 class OptimizeNewton(OptimizeBase):
