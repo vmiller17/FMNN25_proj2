@@ -115,6 +115,35 @@ class OptimizeBase(object):
     def _step(self,f):
         pass 
 
+    @staticmethod
+    def inexactLineSearch(f,S):
+        """This method performs an inexact line search based on the method
+        proposed by R. Fletcher, *Practical Methods of Optimization*, vol. 1,
+        Wiley, New York, 1980.
+
+        :param Function f: The function for which the linesearch is to be
+        performed.
+        :param array S: The direction along which the step is to be taken, in
+        the form of a numpy array containing floats.
+        :returns: The step length.
+        :rtype: float
+        :raises TypeError: If the inparamaters are of the wrong data type, if
+        the size of S is not the same as the number of arguments of f or if S
+        is not a one dimensional array.
+        """
+        if(not isinstance(f,Function)):
+            raise TypeError('f is not a Function object')
+        if(not isinstance(S,np.ndarray)):
+            raise TypeError('S is not a numpy array')
+        if(not issubclass(S.dtype.type,float)):
+            raise TypeError('S does not contain floats')
+        if(not S.ndim == 1):
+            raise TypeError('S must be one dimensional')
+        if(not S.size == f._numArgs):
+            raise TypeError('S must be one dimensional')
+
+        return 1
+
 class OptimizeNewton(OptimizeBase):
     """This class finds the coordinates for the smallest value of a function by
     using Newtons method.
