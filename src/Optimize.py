@@ -3,7 +3,7 @@ import scipy.linalg as sl
 import inspect
 import abc
 import sys
-
+from scipy.optimize import minimize_scalar
 
 class Function:
     """This class is a function which is used together with the optimisation
@@ -193,6 +193,42 @@ class OptimizeBase(object):
                 f0 = f(x + a0*S)
 
         return a0
+
+    @staticmethod
+    def exactLineSearch(f,x,S):
+        """
+        :param Function f: An object of the Function class. F is called with numpy array of shape (m,).
+        :param array x: A numpy array of shape (m,), containing floats. x = _currentValues in OptimizeBase.
+        :param array S: A numpy array of shape (m,), containing floats. S is the newton direction.
+        :returns alpha s.t. fi(alpha)=f(x+alpha*S) is minimized.
+        :rtype: float
+        :raises TypeError: If the inparamaters are of the wrong data type, if
+        the size of S, or x, is not the same as the number of arguments of f
+        or if S or x is not a one dimensional array.
+        """
+        if(not isinstance(f,Function)):
+            raise TypeError('f is not a Function object')
+        if(not isinstance(S,np.ndarray)):
+            raise TypeError('S is not a numpy array')
+        if(not issubclass(S.dtype.type,float)):
+            raise TypeError('S does not contain floats')
+        if(not S.ndim == 1):
+            raise TypeError('S must be one dimensional')
+        if(not S.size == f._numArgs):
+            raise TypeError('S must have the same size as the number of \
+            arguments of f')
+        if(not isinstance(x,np.ndarray)):
+            raise TypeError('x is not a numpy array')
+        if(not issubclass(x.dtype.type,float)):
+            raise TypeError('x does not contain floats')
+        if(not x.ndim == 1):
+            raise TypeError('x must be one dimensional')
+        if(not x.size == f._numArgs):
+            raise TypeError('x must have the same size as the number of \
+            arguments of f')
+        def fi(alpha):
+            return f(x+alpha*S)
+        return minimize_scalar(fi).x
 
 class OptimizeNewton(OptimizeBase):
     """This class finds the coordinates for the smallest value of a function by
