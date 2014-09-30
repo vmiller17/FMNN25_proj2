@@ -109,10 +109,10 @@ class OptimizeBase(object):
         self._currentValues = np.array([0,0,0])
 
 
-    def __call__(f,startValues):
+    def __call__(self,f,startValues):
         pass
 
-    def step(f):
+    def _step(self,f):
         pass 
 
 class OptimizeNewton(OptimizeBase):
@@ -158,8 +158,8 @@ class OptimizeNewton(OptimizeBase):
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
             
-        delta = self.tol    
-        val = self.currentValues
+        delta = self._tol    
+        val = self._currentValues
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
         
@@ -167,15 +167,17 @@ class OptimizeNewton(OptimizeBase):
             for m in xrange(n,dim):               
                 dxi = dxj = np.zeros(dim)
                 dxi[n] = dxj[m] = delta
-                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj))
-                - f(*(val-dxi+dxj)) + f(*(val-dxi-dxj)))/(4*delta**2)     
-                if n != m:
-                    hessian[m,n] = hessian[n,m]
+            if n == m:
+                hessian[n,m] = (f(*(val+dxj)) - 2*f(*val) + f(*(val-dxj)))/(delta**2)
+            else:
+                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj)) - f(*(val-dxi+dxj)) 
+                + f(*(val-dxi-dxj)))/(2*delta**2)
         hessian = (hessian + np.transpose(hessian))/2
         try:
             sl.cholesky(hessian)
         except sl.LinAlgError:
-            print "Matrix is not positive definite"        
+            print "Matrix is not positive definite"
+            return None
         return hessian
 
 class OptimizeDFP(OptimizeBase):
