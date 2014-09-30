@@ -109,10 +109,10 @@ class OptimizeBase(object):
         self._currentValues = np.array([0,0,0])
 
 
-    def __call__(f,startValues):
+    def __call__(self,f,startValues):
         pass
 
-    def step(f):
+    def _step(self,f):
         pass 
 
 class OptimizeNewton(OptimizeBase):
@@ -158,8 +158,8 @@ class OptimizeNewton(OptimizeBase):
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
             
-        delta = self.tol    
-        val = self.currentValues
+        delta = self._tol    
+        val = self._currentValues
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
         
