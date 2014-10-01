@@ -73,28 +73,13 @@ class Function:
 
         if self._g is not None:
             return self._g(*params)
-
-        return self._secondOrderApprox(*params)
-
-    def _secondOrderApprox(self, *params):
+        dx = 1e-6
         gradient = np.empty(self._numArgs)
-        delta = 1.e-6
-        for n in range(0, self._numArgs-1):
-            tempParamsLeft = list(params)
-            tempParamsRight = list(params)
-            tempParamsLeft[n]+=delta
-            tempParamsRight[n]-=delta
-            deltaFunc = self._f(*tempParamsLeft) - self._f(*tempParamsRight)
-            gradient[n] = deltaFunc/(2*delta)
-
+        for n in range(self._numArgs):
+            h = np.zeros(self._numArgs)
+            h[n] = dx
+            gradient[n] = np.gradient(np.array([ self._f(*params-h), self._f(*params), self._f(*params+h)]), dx)[1]            
         return gradient
-
-
-
-
-
-
-
 
 class OptimizeBase(object):
 
