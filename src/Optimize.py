@@ -100,6 +100,42 @@ class OptimizeBase(object):
 
     def _step(self,f):
         pass 
+    
+    def _approxHessian(self,f): # Labinot
+        """Approximates the hessian for a function f by using a finite
+        differences scheme.
+
+        :param Function f: An object of the function class, for which the
+        hessian is to be approximated.
+        :raises TypeError: If f is not an instance of the Function class.
+        :returns: The approximated Hessian. 
+        :rtype: array
+        """
+        if not isinstance(f, Function):  
+            raise TypeError("f must be an instance of the Function class")
+            
+        delta = self._tol    
+        val = self._currentValues
+        dim = f._numArgs
+        hessian = np.zeros([dim,dim])
+        
+        for n in xrange(dim):
+            for m in xrange(n,dim):               
+                dxi = dxj = np.zeros(dim)
+                dxi[n] = dxj[m] = delta
+            if n == m:
+                hessian[n,m] = (f(*(val+dxj)) - 2*f(*val) + f(*(val-dxj)))/(delta**2)
+            else:
+                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj)) - f(*(val-dxi+dxj)) 
+                + f(*(val-dxi-dxj)))/(2*delta**2)
+        hessian = (hessian + np.transpose(hessian))/2
+        try:
+            sl.cholesky(hessian)
+        except sl.LinAlgError:
+            print "Matrix is not positive definite"
+            return None
+        return hessian
+        
 
     @staticmethod
     def inexactLineSearch(f,x,S,rho=0.1,sigma=0.7,tau=0.1,chi=9.0):
@@ -245,40 +281,7 @@ class OptimizeNewton(OptimizeBase):
             raise ValueError("A should have as many rows as b has elements.")
         return sl.solve(A, b)
 
-    def _approxHessian(self,f): # Labinot
-        """Approximates the hessian for a function f by using a finite
-        differences scheme.
 
-        :param Function f: An object of the function class, for which the
-        hessian is to be approximated.
-        :raises TypeError: If f is not an instance of the Function class.
-        :returns: The approximated Hessian. 
-        :rtype: array
-        """
-        if not isinstance(f, Function):  
-            raise TypeError("f must be an instance of the Function class")
-            
-        delta = self._tol    
-        val = self._currentValues
-        dim = f._numArgs
-        hessian = np.zeros([dim,dim])
-        
-        for n in xrange(dim):
-            for m in xrange(n,dim):               
-                dxi = dxj = np.zeros(dim)
-                dxi[n] = dxj[m] = delta
-            if n == m:
-                hessian[n,m] = (f(*(val+dxj)) - 2*f(*val) + f(*(val-dxj)))/(delta**2)
-            else:
-                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj)) - f(*(val-dxi+dxj)) 
-                + f(*(val-dxi-dxj)))/(2*delta**2)
-        hessian = (hessian + np.transpose(hessian))/2
-        try:
-            sl.cholesky(hessian)
-        except sl.LinAlgError:
-            print "Matrix is not positive definite"
-            return None
-        return hessian
 
 class OptimizeDFP(OptimizeBase):
 
@@ -294,3 +297,32 @@ class OptimizeDFP(OptimizeBase):
         term2 = np.dot(np.dot(hessian,np.transpose(gamma)),np.dot(gamma,hessian))
         denominator = np.dot(np.dot(gamma, hessian),np.transpose(gamma))
         return hessian + term1 + term2 / denominator
+
+
+
+class OptimizeBroydenGood(OptimizeBase):
+    
+    def _updateHessian(self, f, H):
+        
+        val = self._currentValues
+        prev = self._previousValues
+        
+        
+        delta = np.array([val - prev])
+        gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
+        
+        u = delta - np.dot(H,gamma)        
+        a = 1/np.dot(np.transpose(u),gamma)
+        
+        v=np.dot(a,u)
+        w = np.transpose(u)
+        
+        H = H + np.dot(np.dot(H,v),np.dot(w,H))/(1-np.dot(np.dot(w,H),v))
+        
+        return H
+
+        
+        
+        
+        
+        
