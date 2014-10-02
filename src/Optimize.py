@@ -328,7 +328,7 @@ class OptimizeBroydenGood(OptimizeBase):
 #        v = a*u
 #        w = np.dot(np.transpose(delta), H)
 #
-#        H = H + scipy.dot(v,w)        
+#        H = H + np.dot(v,w)        
         
               
         return H
