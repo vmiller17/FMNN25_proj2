@@ -302,11 +302,11 @@ class OptimizeDFP(OptimizeBase):
 
 class OptimizeBroydenGood(OptimizeBase):
     
-    def _updateHessian(self, f, H):
+    def _updateHessian(self, f):
         
         val = self._currentValues
         prev = self._previousValues
-        
+        H = sl.inv(self._approxHessian)
         
         delta = np.array([val - prev])
         gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
@@ -314,11 +314,23 @@ class OptimizeBroydenGood(OptimizeBase):
         u = delta - np.dot(H,gamma)        
         a = 1/np.dot(np.transpose(u),gamma)
         
-        v=np.dot(a,u)
+        v= a*u
         w = np.transpose(u)
         
         H = H + np.dot(np.dot(H,v),np.dot(w,H))/(1-np.dot(np.dot(w,H),v))
         
+        
+#        Different version on wiki vs lecture notes?
+        
+#        u = delta - np.dot(H, gamma)
+#        a = 1/(np.dot(np.dot(np.transpose(delta), H), gamma))
+#        
+#        v = a*u
+#        w = np.dot(np.transpose(delta), H)
+#
+#        H = H + scipy.dot(v,w)        
+        
+              
         return H
 
         
