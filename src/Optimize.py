@@ -22,10 +22,14 @@ class Function:
         self._f=f
         self._numArgs=len(inspect.getargspec(f)[0])
 
-        if g != None and len(inspect.getargspec(g)[0]) != self._numArgs:
+        if (g is not None) and (len(inspect.getargspec(g)[0]) is not self._numArgs):
             raise TypeError('f and g does not have the same number of \
             parameters')
-        self._g=g
+        if g is None:
+            self._g = self._approximateGrad
+        else:
+            self._g = g
+
 
     def __call__(self,params):
         """Evaluates the function for the given paramaters.
@@ -71,8 +75,9 @@ class Function:
             raise TypeError('the number of elements in params are not \
                     correct')
 
-        if self._g is not None:
-            return self._g(*params)
+        return self._g(*params)
+
+    def _approximateGrad(self, *params):
         dx = 1e-6
         gradient = np.empty(self._numArgs)
         for n in range(self._numArgs):
