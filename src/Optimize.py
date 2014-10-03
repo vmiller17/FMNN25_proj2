@@ -92,14 +92,43 @@ class OptimizeBase(object):
 
         self._tol=tol
         self._maxIterations = maxIterations
-        self._currentValues = np.array([0,0,0])
+        self._currentValues = np.array([0,0,0]) #Why? 
+        self._nbrOfIter = 200
 
 
     def __call__(self,f,startValues):
-        pass
+        """Minimizes the function f with a initial guess x0
+        
+        :param Function f: An object of the function class which is to be minimized
+        :raises TypeError: If f is not an instance of the Function class
+        :raises ValueError: If 
+        :returns: The point where the function f has its local minimum
+        :rtype: array
+        """
+        
+        if not isinstance(f, Function):  
+            raise TypeError("f must be an instance of the Function class")
+            
+        
+        self._currentValues = startValues
+        n = 0
+        f.evalGrad(self._currentValues)
+        
+        while sl.norm(f._g) > self._tol and n < self._nbrOfIter:
+            S = self._step(f)
+            alpha = self.exactLineSearch(f,self._currentValues,S)
+            self._currentValues = self._currentValues + alpha*S
+            
+            
+        return self._currentValues    
 
     def _step(self,f):
-        pass 
+        """Gives the step direction
+        """
+        H = self._approxHessian(f)
+        S = H*f._g 
+        
+        return S 
     
     def _approxHessian(self,f): # Labinot
         """Approximates the hessian for a function f by using a finite
