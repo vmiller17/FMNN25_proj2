@@ -84,8 +84,28 @@ class TestFunctionEvalGrad:
     def testCorrectValue(self):
         j = self.testFunction.evalGrad(np.array([1.,1.]))
         assert np.allclose(j,np.array([2.,2.]))
-
-
+        
+    def testCorrectValue2(self):
+        def f2(x,y,z):
+            return (x**2)+(y**2)+(z**2)
+        self.testFunction = Optimize.Function(f2)
+        j = self.testFunction.evalGrad(np.array([3.,10.,7.]))
+        assert np.allclose(j,np.array([6.,20.,14.]))
+        
+    def testCorrectValue3(self):
+        def f3(x):
+            return (x**2)
+        self.testFunction = Optimize.Function(f3)
+        j = self.testFunction.evalGrad(np.array([4.]))
+        assert np.allclose(j,np.array([8.]))
+ 
+    def testCorrectValue4(self):
+        def f4(x,y,z,r):
+            return (x**2)+(y**2)+(z**2)+(r**2)
+        self.testFunction = Optimize.Function(f4)
+        j = self.testFunction.evalGrad(np.array([3.,10.,7.,1.]))
+        assert np.allclose(j,np.array([6.,20.,14.,2]))
+        
     @raises(TypeError)
     def testDimensions(self):
         self.testFunction.evalGrad(np.array([1.,2.,3.]))
@@ -96,10 +116,3 @@ class TestFunctionEvalGrad:
 
     def testReturnArrayType(self):
 	assert isinstance(self.testFunction.evalGrad(np.array([1.,2.])),np.ndarray)
-
-
-
-
-
-
-
