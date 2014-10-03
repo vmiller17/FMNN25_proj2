@@ -106,12 +106,14 @@ class OptimizeBase(object):
     def _step(self,f):
         pass 
     
-    def _approxHessian(self,f): # Labinot
+    def _approxHessian(self,f,g=None): # Labinot
         """Approximates the hessian for a function f by using a finite
         differences scheme.
 
         :param Function f: An object of the function class, for which the
         hessian is to be approximated.
+        :param array g: The gradient of f in the current position. 
+        This paramater is optional and if it is not provided it will be calculated. 
         :raises TypeError: If f is not an instance of the Function class.
         :returns: The approximated Hessian. 
         :rtype: array
@@ -119,21 +121,26 @@ class OptimizeBase(object):
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
             
-        delta = self._tol    
-        val = self._currentValues
+        if not isinstance(g,np.ndarray):
+            raise TypeError('g is not a numpy array')
+  
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
+        delta = 1.e-4
         
-        for n in xrange(dim):
-            for m in xrange(n,dim):               
-                dxi = dxj = np.zeros(dim)
-                dxi[n] = dxj[m] = delta
-            if n == m:
-                hessian[n,m] = (f(*(val+dxj)) - 2*f(*val) + f(*(val-dxj)))/(delta**2)
-            else:
-                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj)) - f(*(val-dxi+dxj)) 
-                + f(*(val-dxi-dxj)))/(2*delta**2)
-        hessian = (hessian + np.transpose(hessian))/2
+        if g == None:                              
+            grad = f.evalGrad(self._currentValues)
+        else:
+            grad = g
+        
+        dx = np.zeros(dim)
+        for m in xrange(dim):
+                dx[m]  = delta
+                hessian[m] = (grad+dx) - (grad-dx)
+                dx[m]  = 0
+        hessian = (hessian + np.transpose(hessian))/(2*delta)
+
+        
         try:
             sl.cholesky(hessian)
         except sl.LinAlgError:
