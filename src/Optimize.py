@@ -188,8 +188,6 @@ class OptimizeDFP(OptimizeBase):
 
         delta = np.array([self._currentValues - self._previousValues])
         gamma = np.array([f.evalGrad(self._currentValues) - f.evalGrad(self._previousValues)])
-
-        #denominator = np.dot(delta, np.transpose(gamma))
         term1 = np.dot(np.transpose(delta), delta) / np.dot(delta,np.transpose(gamma))
         term2 = np.dot(np.dot(hessian,np.transpose(gamma)),np.dot(gamma,hessian))
         denominator = np.dot(np.dot(gamma, hessian),np.transpose(gamma))
