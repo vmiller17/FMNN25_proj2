@@ -77,12 +77,16 @@ class Function:
         return self._g(*params)
 
     def _approximateGrad(self, *params):
-        dx = 1e-6
-        gradient = np.empty(self._numArgs)
-        for n in range(self._numArgs):
-            h = np.zeros(self._numArgs)
-            h[n] = dx
-            gradient[n] = np.gradient(np.array([ self._f(*params-h), self._f(*params), self._f(*params+h)]), dx)[1]            
+        
+        dim = self._numArgs
+        delta = 4.8e-6
+       
+        gradient = zeros(dim)
+        for n in xrange(dim):
+            dx  = np.zeros(dim)
+            dx[n]  = delta
+            gradient[n] = (f(*(params+dx)) - f(*(params-dx)))/(2.*delta)
+    
         return gradient
 
 class OptimizeBase(object):
@@ -135,7 +139,7 @@ class OptimizeBase(object):
               
         return S 
     
-    def _approxHessian(self,f,g=None): # Labinot
+    def _approxHessian(self,f,g=None):
         """Approximates the hessian for a function f by using a finite
         differences scheme.
 
@@ -162,11 +166,11 @@ class OptimizeBase(object):
         else:
             grad = g
         
-        dx = np.zeros(dim)
-        for m in xrange(dim):
-                dx[m]  = delta
+        for n in xrange(dim):
+                dx = np.zeros(dim)
+                dx[n]  = delta
                 hessian[m] = (grad+dx) - (grad-dx)
-                dx[m]  = 0
+
         hessian = (hessian + np.transpose(hessian))/(2*delta)
 
         
@@ -175,6 +179,7 @@ class OptimizeBase(object):
         except sl.LinAlgError:
             print "Matrix is not positive definite"
             return None
+            
         return hessian
         
 
@@ -343,9 +348,9 @@ class OptimizeBroydenGood(OptimizeBase):
     
     def _updateInvHessian(self, f):
         
+        H = np.identity(f._numArgs)
         val = self._currentValues
         prev = self._previousValues
-        H = sl.inv(self._approxHessian)
         
         delta = np.array([val - prev])
         gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
@@ -356,8 +361,11 @@ class OptimizeBroydenGood(OptimizeBase):
         v= a*u
         w = np.transpose(u)
         
-        H = H + np.dot(np.dot(H,v),np.dot(w,H))/(1-np.dot(np.dot(w,H),v))
         
+#        Not sure which one is correct        
+#        H = H + np.dot(np.dot(H,v),np.dot(w,H))/(1-np.dot(np.dot(w,H),v)) 
+               
+        H = H + np.dot(v,w)        
             
         return H
         
@@ -366,9 +374,10 @@ class OptimizeBroydenBad(OptimizeBase):
     
     def _updateInvHessian(self, f):
         
+        H = np.identity(f._numArgs)
         val = self._currentValues
         prev = self._previousValues
-        H = sl.inv(self._approxHessian)
+
         
         delta = np.array([val - prev])
         gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
