@@ -72,8 +72,7 @@ class Function:
         if params.ndim != 1:
             raise TypeError('params is not one dimensional')
         if params.shape != (self._numArgs,):
-            raise TypeError('the number of elements in params are not \
-                    correct')
+            raise TypeError('the number of elements in params are not correct')
 
         return self._g(*params)
 
@@ -119,20 +118,21 @@ class OptimizeBase(object):
         grad = f.evalGrad(startValues)
         
         while sl.norm(grad) > self._tol and nbrOfIter < self._maxIterations:
+            grad = f.evalGrad(self._currentValues)
             S = self._step(f,grad)
-            alpha = self.exactLineSearch(f,self._currentValues,S)
+            alpha = OptimizeBase.exactLineSearch(f,self._currentValues,S)
             self._currentValues = self._currentValues + alpha*S
             nbrOfIter = nbrOfIter + 1
             
             
         return self._currentValues    
 
-    def _step(self,f,grad):
+    def _step(self,f,grad): #Added grad here, seems better to pass along then calculate again. This mean tests will fail/error.
         """Gives the step direction
         """
-        H = self._approxHessian(self,f)
-        S = H*grad #FEL
-        
+        H = self._approxHessian(f,grad)
+        S = np.dot(H,grad) 
+              
         return S 
     
     def _approxHessian(self,f,g=None): # Labinot

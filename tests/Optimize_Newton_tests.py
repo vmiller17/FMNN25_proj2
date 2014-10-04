@@ -56,6 +56,11 @@ class TestSolveEquations:
         assert np.allclose(c,np.array([1./12., -1./6., 1./4.]))
 
 class TestApproximateHessian:
+    
+    """
+    This test class needs to be overlooked. The gradient is sometimes sent as a function
+    and sometimes as a ndarray. 
+    """
 
     def setUp(self):
         def f(x,y):
@@ -71,6 +76,7 @@ class TestApproximateHessian:
         del self.function
         del self.optimizer
 
+    @raises(TypeError)
     def testInputCheck(self):
         self.optimizer._approxHessian(48.)
 
@@ -83,8 +89,8 @@ class TestApproximateHessian:
 
     def testApproxHessian(self): #Okand tolerans, kan behova justeras.
         H = np.array([[2,0],[0,2]])
-        approx=self.optimizer._approxHessian(self.function)
-        assert np.allclose(H,approx)
+        approx=self.optimizer._approxHessian(self.function) #the gradient must be provided as a ndarray. Not a function.
+        assert np.allclose(H,approx) # To do this we need to choose a point where we want to evaluate the hessian.
 
     @raises(ValueError)
     def testNotPositiveDefinite(self):
