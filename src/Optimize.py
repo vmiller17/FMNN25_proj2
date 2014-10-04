@@ -22,10 +22,14 @@ class Function:
         self._f=f
         self._numArgs=len(inspect.getargspec(f)[0])
 
-        if g != None and len(inspect.getargspec(g)[0]) != self._numArgs:
+        if (g is not None) and (len(inspect.getargspec(g)[0]) is not self._numArgs):
             raise TypeError('f and g does not have the same number of \
             parameters')
-        self._g=g
+        if g is None:
+            self._g = self._approximateGrad
+        else:
+            self._g = g
+
 
     def __call__(self,params):
         """Evaluates the function for the given paramaters.
@@ -71,8 +75,9 @@ class Function:
             raise TypeError('the number of elements in params are not \
                     correct')
 
-        if self._g is not None:
-            return self._g(*params)
+        return self._g(*params)
+
+    def _approximateGrad(self, *params):
         dx = 1e-6
         gradient = np.empty(self._numArgs)
         for n in range(self._numArgs):
@@ -130,12 +135,14 @@ class OptimizeBase(object):
         
         return S 
     
-    def _approxHessian(self,f): # Labinot
+    def _approxHessian(self,f,g=None): # Labinot
         """Approximates the hessian for a function f by using a finite
         differences scheme.
 
         :param Function f: An object of the function class, for which the
         hessian is to be approximated.
+        :param array g: The gradient of f in the current position. 
+        This paramater is optional and if it is not provided it will be calculated. 
         :raises TypeError: If f is not an instance of the Function class.
         :returns: The approximated Hessian. 
         :rtype: array
@@ -143,21 +150,26 @@ class OptimizeBase(object):
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
             
-        delta = self._tol    
-        val = self._currentValues
+        if not isinstance(g,np.ndarray):
+            raise TypeError('g is not a numpy array')
+  
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
+        delta = 1.e-4
         
-        for n in xrange(dim):
-            for m in xrange(n,dim):               
-                dxi = dxj = np.zeros(dim)
-                dxi[n] = dxj[m] = delta
-            if n == m:
-                hessian[n,m] = (f(*(val+dxj)) - 2*f(*val) + f(*(val-dxj)))/(delta**2)
-            else:
-                hessian[n,m] = (f(*(val+dxi+dxj)) - f(*(val+dxi-dxj)) - f(*(val-dxi+dxj)) 
-                + f(*(val-dxi-dxj)))/(2*delta**2)
-        hessian = (hessian + np.transpose(hessian))/2
+        if g == None:                              
+            grad = f.evalGrad(self._currentValues)
+        else:
+            grad = g
+        
+        dx = np.zeros(dim)
+        for m in xrange(dim):
+                dx[m]  = delta
+                hessian[m] = (grad+dx) - (grad-dx)
+                dx[m]  = 0
+        hessian = (hessian + np.transpose(hessian))/(2*delta)
+
+        
         try:
             sl.cholesky(hessian)
         except sl.LinAlgError:
@@ -320,8 +332,6 @@ class OptimizeDFP(OptimizeBase):
 
         delta = np.array([self._currentValues - self._previousValues])
         gamma = np.array([f.evalGrad(self._currentValues) - f.evalGrad(self._previousValues)])
-
-        #denominator = np.dot(delta, np.transpose(gamma))
         term1 = np.dot(np.transpose(delta), delta) / np.dot(delta,np.transpose(gamma))
         term2 = np.dot(np.dot(hessian,np.transpose(gamma)),np.dot(gamma,hessian))
         denominator = np.dot(np.dot(gamma, hessian),np.transpose(gamma))
