@@ -384,8 +384,4 @@ class OptimizeBroydenBad(OptimizeBase):
                      
         return H
 
-        
-        
-        
-        
-        
+class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
