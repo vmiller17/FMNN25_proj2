@@ -93,7 +93,6 @@ class OptimizeBase(object):
         self._tol=tol
         self._maxIterations = maxIterations
         self._currentValues = np.array([0,0,0]) #Why? 
-        self._nbrOfIter = 200
 
 
     def __call__(self,f,startValues):
@@ -111,22 +110,23 @@ class OptimizeBase(object):
             
         
         self._currentValues = startValues
-        n = 0
-        f.evalGrad(self._currentValues)
+        nbrOfIter = 0
+        grad = f.evalGrad(startValues)
         
-        while sl.norm(f._g) > self._tol and n < self._nbrOfIter:
-            S = self._step(f)
+        while sl.norm(grad) > self._tol and nbrOfIter < self._maxIterations:
+            S = self._step(f,grad)
             alpha = self.exactLineSearch(f,self._currentValues,S)
             self._currentValues = self._currentValues + alpha*S
+            nbrOfIter = nbrOfIter + 1
             
             
         return self._currentValues    
 
-    def _step(self,f):
+    def _step(self,f,grad):
         """Gives the step direction
         """
-        H = self._approxHessian(f)
-        S = H*f._g 
+        H = self._approxHessian(self,f)
+        S = H*grad #FEL
         
         return S 
     
