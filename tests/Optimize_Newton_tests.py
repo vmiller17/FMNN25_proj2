@@ -88,7 +88,7 @@ class TestApproximateHessian:
         assert (self.optimizer._approxHessian(self.function)).shape == (2,2)
 
     def testApproxHessian(self): #Okand tolerans, kan behova justeras.
-        H = np.array([[2,0],[0,2]])
+        H = np.array([[2.,0.],[0.,2.]])
         approx=self.optimizer._approxHessian(self.function) #the gradient must be provided as a ndarray. Not a function.
         assert np.allclose(H,approx) # To do this we need to choose a point where we want to evaluate the hessian.
 

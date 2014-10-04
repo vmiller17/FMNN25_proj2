@@ -81,11 +81,11 @@ class Function:
         dim = self._numArgs
         delta = 4.8e-6
        
-        gradient = zeros(dim)
+        gradient = np.zeros(dim)
         for n in xrange(dim):
             dx  = np.zeros(dim)
             dx[n]  = delta
-            gradient[n] = (f(*(params+dx)) - f(*(params-dx)))/(2.*delta)
+            gradient[n] = (self._f(*(params+dx)) - self._f(*(params-dx)))/(2.*delta)
     
         return gradient
 
@@ -153,9 +153,9 @@ class OptimizeBase(object):
         """
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
-            
-        if not isinstance(g,np.ndarray):
-            raise TypeError('g is not a numpy array')
+        if g != None:   
+            if not isinstance(g,np.ndarray):
+                raise TypeError('g is not a numpy array')
   
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
@@ -169,7 +169,7 @@ class OptimizeBase(object):
         for n in xrange(dim):
                 dx = np.zeros(dim)
                 dx[n]  = delta
-                hessian[m] = (grad+dx) - (grad-dx)
+                hessian[n] = (grad+dx) - (grad-dx)
 
         hessian = (hessian + np.transpose(hessian))/(2*delta)
 
@@ -393,4 +393,4 @@ class OptimizeBroydenBad(OptimizeBase):
                      
         return H
 
-class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
+
