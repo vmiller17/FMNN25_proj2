@@ -20,8 +20,11 @@ class TestNewtonCall:
     def setUp(self):
 	def f(x,y):
 	    return (x**2)+(y**2)
-        self.testFunction = Optimize.Function(f)
+	def g(x,y):
+	    return np.array([2*x,2*y]) #This function was wrong at first, returned 2*x + 2*y
+        self.testFunction = Optimize.Function(f,g)
 	self.testOptimize = Optimize.OptimizeNewton()
+	self.numGrad = self.testFunction.evalGrad(np.array([1.,1.]))
 
     def tearDown(self):
         del self.testFunction
@@ -76,4 +79,4 @@ class TestNewtonCall:
     @raises(TypeError)
     def testArrayType(self):
 	self.testOptimize._step(1.)
-"""
+	"""
