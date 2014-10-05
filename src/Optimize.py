@@ -83,10 +83,9 @@ class Function:
        
         gradient = np.zeros(dim)
         for n in xrange(dim):
-            dx  = np.zeros(dim)
-            dx[n]  = delta
+            dx = np.zeros(dim)
+            dx[n] = delta
             gradient[n] = (self._f(*(params+dx)) - self._f(*(params-dx)))/(2.*delta)
-    
         return gradient
 
 class OptimizeBase(object):
@@ -325,16 +324,58 @@ class OptimizeNewton(OptimizeBase):
 
 class OptimizeDFP(OptimizeBase):
 
-    def _approximateHessian(self, f, hessian):
+    def __call__(self, f, startValues):
+        """
+        Minimizes the function f with a initial guess x0
+        :param Function f: An object of the function class which is to be minimized
+        :raises TypeError: If f is not an instance of the Function class
+        :raises ValueError: If
+        :returns: The point where the function f has its local minimum
+        :rtype: array
+        """
+
+        if not isinstance(f, Function):
+            raise TypeError("f must be an instance of the Function class")
+
+        self._currentValues = startValues
+        nbrIter = 1
+        self._currentGrad = f.evalGrad(startValues)
+        self._currentH = np.eye(f._numArgs)
+        tempValues = self._thisStep(f)
+        self._previousValues = np.copy(self._currentValues)
+        self._currentValues = tempValues
+        self._previousGrad = np.copy(self._currentGrad)
+        self._currentGrad = f.evalGrad(self._currentValues)
+        while sl.norm(self._currentGrad) > self._tol and nbrIter < self._maxIterations:
+            self._currentH = self._approximateHessian(f)
+            self._previousValues = np.copy(self._currentValues)
+            self._currentValues = self._thisStep(f)
+            self._previousGrad = np.copy(self._currentGrad)
+            self._currentGrad = f.evalGrad(self._currentValues)
+            nbrIter += 1
+
+        return self._currentValues
+
+    def _thisStep(self, f):
+        """Takes a step towards the solution.
+        :param Function f: An object of the function class.
+        """
+
+        S = np.dot(self._currentH, self._currentGrad)
+        alpha = OptimizeBase.exactLineSearch(f, self._currentValues, S)
+        val = self._currentValues + alpha*S
+        return val
+
+    def _approximateHessian(self, f):
         if not (isinstance(f, Function)):
             raise TypeError("f must be an instance of the function class")
 
         delta = np.array([self._currentValues - self._previousValues])
-        gamma = np.array([f.evalGrad(self._currentValues) - f.evalGrad(self._previousValues)])
-        term1 = np.dot(np.transpose(delta), delta) / np.dot(delta,np.transpose(gamma))
-        term2 = np.dot(np.dot(hessian,np.transpose(gamma)),np.dot(gamma,hessian))
-        denominator = np.dot(np.dot(gamma, hessian),np.transpose(gamma))
-        return hessian + term1 + term2 / denominator
+        gamma = np.array([self._currentGrad - self._previousGrad])
+        term1 = np.dot(np.transpose(delta), delta) / np.dot(delta, np.transpose(gamma))
+        term2 = np.dot(np.dot(self._currentH, np.transpose(gamma)), np.dot(gamma, self._currentH))
+        denominator = np.dot(np.dot(gamma, self._currentH), np.transpose(gamma))
+        return self._currentH + term1 + term2 / denominator
 
 
 
