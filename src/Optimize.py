@@ -379,7 +379,7 @@ class OptimizeDFP(OptimizeBase):
         nbrIter = 1
         self._currentGrad = f.evalGrad(startValues)
         self._currentH = np.eye(f._numArgs)
-        tempValues = self._thisStep(f)
+        tempValues = self._step(f)
         self._previousValues = np.copy(self._currentValues)
         self._currentValues = tempValues
         self._previousGrad = np.copy(self._currentGrad)
@@ -387,14 +387,14 @@ class OptimizeDFP(OptimizeBase):
         while sl.norm(self._currentGrad) > self._tol and nbrIter < self._maxIterations:
             self._currentH = self._approximateHessian(f)
             self._previousValues = np.copy(self._currentValues)
-            self._currentValues = self._thisStep(f)
+            self._currentValues = self._step(f)
             self._previousGrad = np.copy(self._currentGrad)
             self._currentGrad = f.evalGrad(self._currentValues)
             nbrIter += 1
 
         return self._currentValues
 
-    def _thisStep(self, f):
+    def _step(self, f):
         """Takes a step towards the solution.
         :param Function f: An object of the function class.
         """
@@ -420,7 +420,7 @@ class OptimizeDFP(OptimizeBase):
 class OptimizeBroydenGood(OptimizeBase):
     
         
-    def _step(self,f,currentGrad):
+    def _step(self,f):
     
         if not hasattr(self, '_currentHessInv'):
             self._currentHessInv = np.eye(f._numArgs)
@@ -441,24 +441,15 @@ class OptimizeBroydenGood(OptimizeBase):
                      
         return nextValues
         
+    def _approxHessian(self,f):
+        """Gives an approxmation of the Hessian
+        """
+        return
+        
         
 class OptimizeBroydenBad(OptimizeBase):
     
-    #Don't know which to keep
-    
-    #Part 1
-    def _updateInvHessian(self, f):
-        
-        H = np.identity(f._numArgs)
-        val = self.currentValues
-        prev = self._previousValues
-
-        
-        delta = np.array([val - prev]) 
-        gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
-        
-    #Part2 
-    def _step(self,f): #This function should NOT take the grad as input
+    def _step(self,f):
     
         if not hasattr(self, '_currentHessInv'):
             self._currentHessInv = np.eye(f._numArgs)
@@ -478,6 +469,11 @@ class OptimizeBroydenBad(OptimizeBase):
         
                      
         return nextValues
+        
+    def _approxHessian(self,f):
+        """Gives an approxmation of the Hessian
+        """
+        return
 
 
 class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
