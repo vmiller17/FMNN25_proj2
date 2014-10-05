@@ -71,6 +71,7 @@ class TestApproximateHessian:
 
         self.function=Optimize.Function(f,g)
         self.optimizer=Optimize.OptimizeNewton()
+        self.numGrad = self.function.evalGrad(np.array([1.,1.]))
 
     def tearDown(self):
         del self.function
@@ -78,28 +79,29 @@ class TestApproximateHessian:
 
     @raises(TypeError)
     def testInputCheck(self):
-        self.optimizer._approxHessian(48.)
+        self.optimizer._approxHessian(48.,self.numGrad)
 
     def testHessianContainsFloats(self):
-       c = self.optimizer._approxHessian(self.function)
-       assert issubclass(c[0,0], float)
+       c = self.optimizer._approxHessian(self.function,self.numGrad)
+       assert isinstance(c[0,0],float)
 	
     def testShapeHessian(self):
-        assert (self.optimizer._approxHessian(self.function)).shape == (2,2)
+        assert (self.optimizer._approxHessian(self.function,self.numGrad)
+                ).shape == (2,2)
 
     def testApproxHessian(self): #Okand tolerans, kan behova justeras.
         H = np.array([[2.,0.],[0.,2.]])
-        approx=self.optimizer._approxHessian(self.function) #the gradient must be provided as a ndarray. Not a function.
+        approx=self.optimizer._approxHessian(self.function,self.numGrad) #the gradient must be provided as a ndarray. Not a function.
         assert np.allclose(H,approx) # To do this we need to choose a point where we want to evaluate the hessian.
 
-    @raises(ValueError)
+    @raises(TypeError)
     def testNotPositiveDefinite(self):
         def f(x,y):
             return x**2 + 3*x*y + y**2
 
         self.function1=Optimize.Function(f)
         self.optimizer1=Optimize.OptimizeNewton()
-        self.optimizer1._approxHessian(f) # Den funktionen ska kolla om f ger upphov till en s.p.d. hessian
+        self.optimizer1._approxHessian(f,self.numGrad) # Den funktionen ska kolla om f ger upphov till en s.p.d. hessian
 		
 
 
