@@ -99,7 +99,11 @@ class OptimizeBase(object):
 
 
     def __init__(self,tol=1e-6,maxIterations=200):
-
+        
+        if (not isinstance(tol,float)): 
+           raise TypeError('tol is not a float')            
+        if (not isinstance(maxIterations,int)):
+            raise TypeError('maxIterations is not a int')
         self._tol=tol
         self._maxIterations = maxIterations
         self.currentValues = None  
@@ -135,7 +139,6 @@ class OptimizeBase(object):
         """Takes a step towards the solution.
         
         :param Function f: An object of the function class.
-        :param array currentGrad: A ndarray of the gradient in the currnet point.
         :raises TypeErro: If f is not an instance of the function class or if 
         currentGrad is not an np.array
         :raises ValueError: If currentGrad does not contain floats.
@@ -294,7 +297,9 @@ class OptimizeNewton(OptimizeBase):
             raise TypeError("b must be an array of floats") 
         if A.shape[0] != len(b):
             raise ValueError("A should have as many rows as b has elements.")
-        return sl.solve(A, b)
+            
+            
+        return sl.solve(A, b) #Should we check with cholesky first to rasie error? 
 
 
     def _approxHessian(self,f):
@@ -332,6 +337,7 @@ class OptimizeNewton(OptimizeBase):
             sl.cholesky(hessian)
         except sl.LinAlgError:
             print "Matrix is not positive definite" #Raise an exeption here
+            raise ValueError('The Hessian is not positive definite')
             return None
             
         return hessian

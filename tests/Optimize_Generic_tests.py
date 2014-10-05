@@ -30,7 +30,6 @@ class TestNewtonCall:
         del self.testFunction
 	del self.testOptimize
 
-    @raises(TypeError)
     def testReturnArray(self):
 	val = self.testOptimize(self.testFunction,np.array([1.,1.]))
 	assert isinstance(val,np.ndarray)

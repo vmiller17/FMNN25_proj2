@@ -12,7 +12,7 @@ def rosen(x,y):
 def testRosenBFGS():
 
     f = Optimize.Function(rosen)
-    optimizer  = Optimize.OptimizeBFGS(tol=1e-18)
+    optimizer  = Optimize.OptimizeBFGS(tol=1e-8)
     startValues = np.array([1.,1.])
     solution = optimizer(f,startValues)
 
