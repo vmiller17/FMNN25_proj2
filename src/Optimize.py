@@ -122,8 +122,8 @@ class OptimizeBase(object):
         grad = f.evalGrad(startValues)
         
         while sl.norm(grad) > self._tol and nbrOfIter < self._maxIterations:
-            grad = f.evalGrad(self._currentValues)
-            S = self._step(f,grad)
+            currentGrad = f.evalGrad(self._currentValues)
+            S = self._step(f,currentGrad)
             alpha = OptimizeBase.exactLineSearch(f,self._currentValues,S)
             self._currentValues = self._currentValues + alpha*S
             nbrOfIter = nbrOfIter + 1
@@ -131,45 +131,38 @@ class OptimizeBase(object):
             
         return self._currentValues    
 
-    def _step(self,f,grad): #Added grad here, seems better to pass along then calculate again. This mean tests will fail/error.
+    def _step(self,f,currentGrad): #Added grad here, seems better to pass along then calculate again. This mean tests will fail/error.
         """Gives the step direction
         """
-        H = self._approxHessian(f,grad)
-        S = np.dot(H,grad) 
+        H = self._approxHessian(f,currentGrad)
+        S = np.dot(H,currentGrad) 
               
         return S 
     
-    def _approxHessian(self,f,g=None):
+    def _approxHessian(self,f,currentGrad):
         """Approximates the hessian for a function f by using a finite
         differences scheme.
 
         :param Function f: An object of the function class, for which the
         hessian is to be approximated.
-        :param array g: The gradient of f in the current position. 
-        This paramater is optional and if it is not provided it will be calculated. 
+        :param array currentGrad: the value of the gradient in the current
+        point
         :raises TypeError: If f is not an instance of the Function class.
         :returns: The approximated Hessian. 
         :rtype: array
         """
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
-        if g != None:   
-            if not isinstance(g,np.ndarray):
-                raise TypeError('g is not a numpy array')
   
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
         delta = 1.e-4
         
-        if g == None:                              
-            grad = f.evalGrad(self._currentValues)
-        else:
-            grad = g
         
         for n in xrange(dim):
                 dx = np.zeros(dim)
                 dx[n]  = delta
-                hessian[n] = (grad+dx) - (grad-dx)
+                hessian[n] = (currentGrad+dx) - (currentGrad-dx)
 
         hessian = (hessian + np.transpose(hessian))/(2*delta)
 
