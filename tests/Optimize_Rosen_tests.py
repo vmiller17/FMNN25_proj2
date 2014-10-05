@@ -19,3 +19,43 @@ def testRosenBFGS():
     assert abs(solution[0]) - 1. < 1e-6
     assert abs(solution[1]) - 1. < 1e-6
     
+def testRosenBroydenGood():
+
+    f = Optimize.Function(rosen)
+    optimizer  = Optimize.OptimizeBroydenGood(tol=1e-8)
+    startValues = np.array([1.,1.])
+    solution = optimizer(f,startValues)
+
+    assert abs(solution[0]) - 1. < 1e-6
+    assert abs(solution[1]) - 1. < 1e-6
+    
+def testRosenBroydenBad():
+
+    f = Optimize.Function(rosen)
+    optimizer  = Optimize.OptimizeBroydenBad(tol=1e-8)
+    startValues = np.array([1.,1.])
+    solution = optimizer(f,startValues)
+
+    assert abs(solution[0]) - 1. < 1e-6
+    assert abs(solution[1]) - 1. < 1e-6
+    
+def testRosenNewton():
+
+    f = Optimize.Function(rosen)
+    optimizer  = Optimize.OptimizeNewton(tol=1e-8)
+    startValues = np.array([1.,1.])
+    solution = optimizer(f,startValues)
+
+    assert abs(solution[0]) - 1. < 1e-6
+    assert abs(solution[1]) - 1. < 1e-6
+    
+    
+def testRosenDFP():
+
+    f = Optimize.Function(rosen)
+    optimizer  = Optimize.OptimizeDFP(tol=1e-8)
+    startValues = np.array([1.,1.])
+    solution = optimizer(f,startValues)
+
+    assert abs(solution[0]) - 1. < 1e-6
+    assert abs(solution[1]) - 1. < 1e-6
