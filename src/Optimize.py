@@ -119,25 +119,26 @@ class OptimizeBase(object):
         
         self._currentValues = startValues
         nbrOfIter = 0
-        grad = f.evalGrad(startValues)
+        currentGrad = f.evalGrad(startValues)
         
-        while sl.norm(grad) > self._tol and nbrOfIter < self._maxIterations:
+        while sl.norm(currentGrad) > self._tol and nbrOfIter < self._maxIterations:
             currentGrad = f.evalGrad(self._currentValues)
-            S = self._step(f,currentGrad)
-            alpha = OptimizeBase.exactLineSearch(f,self._currentValues,S)
-            self._currentValues = self._currentValues + alpha*S
+            self._currentValues = self._step(f,currentGrad)
             nbrOfIter = nbrOfIter + 1
-            
-            
         return self._currentValues    
 
-    def _step(self,f,currentGrad): #Added grad here, seems better to pass along then calculate again. This mean tests will fail/error.
-        """Gives the step direction
+    def _step(self,f,currentGrad): #Added grad here, seems better to pass along then calculate again.
+        """Takes a step towards the solution.
+        :param Function f: An object of the function class.
+        :param array currentGrad: A ndarray of the gradient in the currnet point.
         """
+
         H = self._approxHessian(f,currentGrad)
-        S = np.dot(H,currentGrad) 
-              
-        return S 
+        S = np.dot(H,currentGrad)   
+        alpha = OptimizeBase.exactLineSearch(f,self._currentValues,S)
+        val = self._currentValues + alpha*S
+        
+        return val 
     
     def _approxHessian(self,f,currentGrad):
         """Approximates the hessian for a function f by using a finite
