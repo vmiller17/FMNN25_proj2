@@ -340,52 +340,50 @@ class OptimizeDFP(OptimizeBase):
 
 class OptimizeBroydenGood(OptimizeBase):
     
-    def _updateInvHessian(self, f):
+    def _step(self,f,currentGrad):
+    
+        if not hasattr(self, '_currentHessInv'):
+            self._currentHessInv = np.eye(f._numArgs)
+            self._i = 0
+        self._i = self._i + 1
+        s = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
+        alpha = self.inexactLineSearch(f,self._currentValues,s)
+        delta = alpha*s
+        nextValues = self._currentValues + delta
+        gamma = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
         
-        H = np.identity(f._numArgs)
-        val = self._currentValues
-        prev = self._previousValues
+       
+        u = delta - np.dot(self._currentHessInv, gamma)       
+        a = 1/np.dot(u, gamma)        
+        nextHessInv = self._currentHessInv + a*np.outer(u,u)
+        self._currentHessInv = nextHessInv
         
-        delta = np.array([val - prev])
-        gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
-        
-        u = delta - np.dot(H,gamma)        
-        a = 1/np.dot(np.transpose(u),gamma)
-        
-        v= a*u
-        w = np.transpose(u)
-        
-        
-#        Not sure which one is correct        
-#        H = H + np.dot(np.dot(H,v),np.dot(w,H))/(1-np.dot(np.dot(w,H),v)) 
-               
-        H = H + np.dot(v,w)        
-            
-        return H
+                     
+        return nextValues
         
         
 class OptimizeBroydenBad(OptimizeBase):
     
-    def _updateInvHessian(self, f):
-        
-        H = np.identity(f._numArgs)
-        val = self._currentValues
-        prev = self._previousValues
-
-        
-        delta = np.array([val - prev])
-        gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
+    def _step(self,f,currentGrad):
+    
+        if not hasattr(self, '_currentHessInv'):
+            self._currentHessInv = np.eye(f._numArgs)
+            self._i = 0
+        self._i = self._i + 1
+        s = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
+        alpha = self.inexactLineSearch(f,self._currentValues,s)
+        delta = alpha*s
+        nextValues = self._currentValues + delta
+        gamma = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
         
        
-        u = delta - np.dot(H, gamma)
-        a = 1/(np.dot(np.transpose(gamma), gamma))
+        u = delta - np.dot(self._currentHessInv, gamma)       
+        a = 1/np.dot(gamma, gamma);        
+        nextHessInv = self._currentHessInv + a*np.outer(u,gamma)
+        self._currentHessInv = nextHessInv
         
-        v = a*u
-        w = np.transpose(gamma)
-
-        H = H + np.dot(v,w)       
                      
-        return H
+        return nextValues
 
 
 class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
@@ -406,3 +404,4 @@ class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
                         np.outer(s,y).dot(self._currentHessInv))/(s.dot(y))
         self._currentHessInv = nextHessInv
         return nextValues
+        
