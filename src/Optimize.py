@@ -79,7 +79,7 @@ class Function:
     def _approximateGrad(self, *params):
         
         dim = self._numArgs
-        delta = 4.8e-6
+        delta = 4.8e-8
        
         gradient = np.zeros(dim)
         for n in xrange(dim):
@@ -362,7 +362,7 @@ class OptimizeDFP(OptimizeBase):
         """
 
         S = np.dot(self._currentH, self._currentGrad)
-        alpha = OptimizeBase.exactLineSearch(f, self._currentValues, S)
+        alpha = OptimizeBase.inexactLineSearch(f, self._currentValues, S)
         val = self._currentValues + alpha*S
         return val
 
