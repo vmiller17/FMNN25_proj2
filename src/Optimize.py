@@ -395,3 +395,4 @@ class OptimizeBroydenBad(OptimizeBase):
 
 
 class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
+    pass
