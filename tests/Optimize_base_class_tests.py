@@ -31,7 +31,7 @@ class TestRunningOptimizeBase:
                         6 + 4*(x**4)*(y**2)*math.exp((x*y)**2)]
                     ],dtype=float)
                     
-            def _approxHessian(self,f):
+            def _approxHessian(self,f): #Added this just because we have to @abstractmethod
                 """Gives an approxmation of the Hessian
                 """
                 return

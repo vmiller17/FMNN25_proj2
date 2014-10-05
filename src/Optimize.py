@@ -444,21 +444,8 @@ class OptimizeBroydenGood(OptimizeBase):
         
 class OptimizeBroydenBad(OptimizeBase):
     
-    #Don't know which to keep
-    
-    #Part 1
-    def _updateInvHessian(self, f):
-        
-        H = np.identity(f._numArgs)
-        val = self.currentValues
-        prev = self._previousValues
 
-        
-        delta = np.array([val - prev]) 
-        gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
-        
-    #Part2 
-    def _step(self,f): #This function should NOT take the grad as input
+    def _step(self,f):
     
         if not hasattr(self, '_currentHessInv'):
             self._currentHessInv = np.eye(f._numArgs)
