@@ -72,6 +72,7 @@ class TestApproximateHessian:
         self.function=Optimize.Function(f,g)
         self.optimizer=Optimize.OptimizeNewton()
         self.numGrad = self.function.evalGrad(np.array([1.,1.]))
+        self.optimizer.currentValues = np.array([1.,1.]) #Added this so that the gradient could be evaluated.
 
     def tearDown(self):
         del self.function
@@ -79,20 +80,20 @@ class TestApproximateHessian:
 
     @raises(TypeError)
     def testInputCheck(self):
-        self.optimizer._approxHessian(48.,self.numGrad)
+        self.optimizer._approxHessian(48.)
 
     def testHessianContainsFloats(self):
-       c = self.optimizer._approxHessian(self.function,self.numGrad)
+       c = self.optimizer._approxHessian(self.function)
        assert isinstance(c[0,0],float)
 	
     def testShapeHessian(self):
-        assert (self.optimizer._approxHessian(self.function,self.numGrad)
+        assert (self.optimizer._approxHessian(self.function)
                 ).shape == (2,2)
 
     def testApproxHessian(self): #Okand tolerans, kan behova justeras.
         H = np.array([[2.,0.],[0.,2.]])
-        approx=self.optimizer._approxHessian(self.function,self.numGrad) #the gradient must be provided as a ndarray. Not a function.
-        assert np.allclose(H,approx) # To do this we need to choose a point where we want to evaluate the hessian.
+        approx=self.optimizer._approxHessian(self.function) #Added a if statement so that the gradient is evalueted.
+        assert np.allclose(H,approx) # To do this we need to choose a point where we want to evaluate the hessian. Is the point above OK?
 
     @raises(TypeError)
     def testNotPositiveDefinite(self):
@@ -101,7 +102,7 @@ class TestApproximateHessian:
 
         self.function1=Optimize.Function(f)
         self.optimizer1=Optimize.OptimizeNewton()
-        self.optimizer1._approxHessian(f,self.numGrad) # Den funktionen ska kolla om f ger upphov till en s.p.d. hessian
+        self.optimizer1._approxHessian(f) # Den funktionen ska kolla om f ger upphov till en s.p.d. hessian
 		
 
 
