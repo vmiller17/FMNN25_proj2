@@ -79,14 +79,13 @@ class Function:
     def _approximateGrad(self, *params):
         
         dim = self._numArgs
-        delta = 4.8e-6
+        delta = 4.8e-8
        
         gradient = np.zeros(dim)
         for n in xrange(dim):
-            dx  = np.zeros(dim)
-            dx[n]  = delta
+            dx = np.zeros(dim)
+            dx[n] = delta
             gradient[n] = (self._f(*(params+dx)) - self._f(*(params-dx)))/(2.*delta)
-    
         return gradient
 
 class OptimizeBase(object):
@@ -357,7 +356,49 @@ class OptimizeNewton(OptimizeBase):
 
 class OptimizeDFP(OptimizeBase):
 
-    def _approximateHessian(self, f, hessian):
+    def __call__(self, f, startValues):
+        """
+        Minimizes the function f with a initial guess x0
+        :param Function f: An object of the function class which is to be minimized
+        :raises TypeError: If f is not an instance of the Function class
+        :raises ValueError: If
+        :returns: The point where the function f has its local minimum
+        :rtype: array
+        """
+
+        if not isinstance(f, Function):
+            raise TypeError("f must be an instance of the Function class")
+
+        self._currentValues = startValues
+        nbrIter = 1
+        self._currentGrad = f.evalGrad(startValues)
+        self._currentH = np.eye(f._numArgs)
+        tempValues = self._thisStep(f)
+        self._previousValues = np.copy(self._currentValues)
+        self._currentValues = tempValues
+        self._previousGrad = np.copy(self._currentGrad)
+        self._currentGrad = f.evalGrad(self._currentValues)
+        while sl.norm(self._currentGrad) > self._tol and nbrIter < self._maxIterations:
+            self._currentH = self._approximateHessian(f)
+            self._previousValues = np.copy(self._currentValues)
+            self._currentValues = self._thisStep(f)
+            self._previousGrad = np.copy(self._currentGrad)
+            self._currentGrad = f.evalGrad(self._currentValues)
+            nbrIter += 1
+
+        return self._currentValues
+
+    def _thisStep(self, f):
+        """Takes a step towards the solution.
+        :param Function f: An object of the function class.
+        """
+
+        S = np.dot(self._currentH, self._currentGrad)
+        alpha = OptimizeBase.inexactLineSearch(f, self._currentValues, S)
+        val = self._currentValues + alpha*S
+        return val
+
+    def _approximateHessian(self, f):
         if not (isinstance(f, Function)):
             raise TypeError("f must be an instance of the function class")
 
@@ -386,18 +427,23 @@ class OptimizeBroydenGood(OptimizeBase):
         
         v= a*u
         w = np.transpose(u)
+
         
+       
+        u = delta - np.dot(self._currentHessInv, gamma)       
+        a = 1/np.dot(u, gamma)        
+        nextHessInv = self._currentHessInv + a*np.outer(u,u)
+        self._currentHessInv = nextHessInv
         
-#        Not sure which one is correct        
-#        H = H + np.dot(np.dot(H,v),np.dot(w,H))/(1-np.dot(np.dot(w,H),v)) 
-               
-        H = H + np.dot(v,w)        
-            
-        return H
+                     
+        return nextValues
         
         
 class OptimizeBroydenBad(OptimizeBase):
     
+    #Don't know which to keep
+    
+    #Part 1
     def _updateInvHessian(self, f):
         
         H = np.identity(f._numArgs)
@@ -405,20 +451,48 @@ class OptimizeBroydenBad(OptimizeBase):
         prev = self._previousValues
 
         
-        delta = np.array([val - prev])
+        delta = np.array([val - prev]) 
         gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
         
-       
-        u = delta - np.dot(H, gamma)
-        a = 1/(np.dot(np.transpose(gamma), gamma))
+    #Part2 
+    def _step(self,f,currentGrad):
+    
+        if not hasattr(self, '_currentHessInv'):
+            self._currentHessInv = np.eye(f._numArgs)
+            self._i = 0
+        self._i = self._i + 1
+        s = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
+        alpha = self.inexactLineSearch(f,self._currentValues,s)
+        delta = alpha*s
+        nextValues = self._currentValues + delta
+        gamma = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
         
-        v = a*u
-        w = np.transpose(gamma)
-
-        H = H + np.dot(v,w)       
+       
+        u = delta - np.dot(self._currentHessInv, gamma)       
+        a = 1/np.dot(gamma, gamma);        
+        nextHessInv = self._currentHessInv + a*np.outer(u,gamma)
+        self._currentHessInv = nextHessInv
+        
                      
-        return H
+        return nextValues
 
 
 class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
-    pass
+
+    def _step(self,f,currentGrad):
+        if not hasattr(self, '_currentHessInv'):
+            self._currentHessInv = np.eye(f._numArgs)
+            self._i = 0
+        self._i = self._i + 1
+        p = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
+        alpha = self.inexactLineSearch(f,self._currentValues,p)
+        s = alpha*p
+        nextValues = self._currentValues + s
+        y = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
+        nextHessInv = self._currentHessInv + (s.dot(y) +
+            y.dot(self._currentHessInv).dot(y))*(np.outer(s,s))/(s.dot(y))**2 \
+                    - (self._currentHessInv.dot(np.outer(y,s)) + \
+                        np.outer(s,y).dot(self._currentHessInv))/(s.dot(y))
+        self._currentHessInv = nextHessInv
+        return nextValues
+        
