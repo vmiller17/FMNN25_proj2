@@ -413,21 +413,18 @@ class OptimizeDFP(OptimizeBase):
 
 class OptimizeBroydenGood(OptimizeBase):
     
-    def _updateInvHessian(self, f):
         
-        H = np.identity(f._numArgs)
-        val = self.currentValues
-        prev = self._previousValues
-        
-        delta = np.array([val - prev])
-        gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
-        
-        u = delta - np.dot(H,gamma)        
-        a = 1/np.dot(np.transpose(u),gamma)
-        
-        v= a*u
-        w = np.transpose(u)
-
+    def _step(self,f,currentGrad):
+    
+        if not hasattr(self, '_currentHessInv'):
+            self._currentHessInv = np.eye(f._numArgs)
+            self._i = 0
+        self._i = self._i + 1
+        s = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
+        alpha = self.inexactLineSearch(f,self._currentValues,s)
+        delta = alpha*s
+        nextValues = self._currentValues + delta
+        gamma = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
         
        
         u = delta - np.dot(self._currentHessInv, gamma)       
@@ -441,20 +438,6 @@ class OptimizeBroydenGood(OptimizeBase):
         
 class OptimizeBroydenBad(OptimizeBase):
     
-    #Don't know which to keep
-    
-    #Part 1
-    def _updateInvHessian(self, f):
-        
-        H = np.identity(f._numArgs)
-        val = self.currentValues
-        prev = self._previousValues
-
-        
-        delta = np.array([val - prev]) 
-        gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
-        
-    #Part2 
     def _step(self,f,currentGrad):
     
         if not hasattr(self, '_currentHessInv'):
