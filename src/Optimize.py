@@ -88,6 +88,9 @@ class Function:
             gradient[n] = (self._f(*(params+dx)) - self._f(*(params-dx)))/(2.*delta)
         return gradient
 
+
+
+
 class OptimizeBase(object):
 
     __metaclass__ = abc.ABCMeta
@@ -260,6 +263,9 @@ class OptimizeBase(object):
             return f(x+alpha*S)
         return minimize_scalar(fi).x
 
+
+
+
 class OptimizeNewton(OptimizeBase):
     """This class finds the coordinates for the smallest value of a function by
     using Newtons method.
@@ -398,7 +404,7 @@ class OptimizeDFP(OptimizeBase):
         val = self._currentValues + alpha*S
         return val
 
-    def _approximateHessian(self, f):
+    def _approxHessian(self, f):
         if not (isinstance(f, Function)):
             raise TypeError("f must be an instance of the function class")
 
@@ -455,17 +461,17 @@ class OptimizeBroydenBad(OptimizeBase):
         gamma = np.array([f.evalGrad(val) - f.evalGrad(prev)])
         
     #Part2 
-    def _step(self,f,currentGrad):
+    def _step(self,f):
     
         if not hasattr(self, '_currentHessInv'):
             self._currentHessInv = np.eye(f._numArgs)
             self._i = 0
         self._i = self._i + 1
-        s = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
-        alpha = self.inexactLineSearch(f,self._currentValues,s)
+        s = -self._currentHessInv.dot(f.evalGrad(self.currentValues))
+        alpha = self.inexactLineSearch(f,self.currentValues,s)
         delta = alpha*s
-        nextValues = self._currentValues + delta
-        gamma = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
+        nextValues = self.currentValues + delta
+        gamma = f.evalGrad(nextValues) - f.evalGrad(self.currentValues)
         
        
         u = delta - np.dot(self._currentHessInv, gamma)       
@@ -479,20 +485,25 @@ class OptimizeBroydenBad(OptimizeBase):
 
 class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
 
-    def _step(self,f,currentGrad):
+    def _step(self,f):
         if not hasattr(self, '_currentHessInv'):
             self._currentHessInv = np.eye(f._numArgs)
             self._i = 0
         self._i = self._i + 1
-        p = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
-        alpha = self.inexactLineSearch(f,self._currentValues,p)
+        p = -self._currentHessInv.dot(f.evalGrad(self.currentValues))
+        alpha = self.inexactLineSearch(f,self.currentValues,p)
         s = alpha*p
-        nextValues = self._currentValues + s
-        y = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
+        nextValues = self.currentValues + s
+        y = f.evalGrad(nextValues) - f.evalGrad(self.currentValues)
         nextHessInv = self._currentHessInv + (s.dot(y) +
             y.dot(self._currentHessInv).dot(y))*(np.outer(s,s))/(s.dot(y))**2 \
                     - (self._currentHessInv.dot(np.outer(y,s)) + \
                         np.outer(s,y).dot(self._currentHessInv))/(s.dot(y))
         self._currentHessInv = nextHessInv
         return nextValues
+        
+    def _approxHessian(self,f):
+        """Gives an approxmation of the Hessian
+        """
+        return
         

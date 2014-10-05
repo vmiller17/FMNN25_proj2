@@ -18,10 +18,10 @@ class TestRunningOptimizeBase:
                 6*y + 2*y*(x**2)*math.exp((x*y)**2)],dtype=float)
 
         class NewtonOptimizer(OptimizeBase):
-            def _step(elf,f,currentGrad):
-                S = -np.linalg.inv(elf.H(*elf._currentValues)).dot(currentGrad)
-                elf._currentValues = elf._currentValues + S
-                return elf._currentValues 
+            def _step(self,f):
+                S = -np.linalg.inv(self.H(*self.currentValues)).dot(self.currentGrad)
+                self.currentValues = self.currentValues + S
+                return self.currentValues 
 
             def H(elf,x,y):
                 return np.array([
@@ -30,6 +30,11 @@ class TestRunningOptimizeBase:
                     [4*(y**3)*(x**3)*math.exp((x*y)**2),
                         6 + 4*(x**4)*(y**2)*math.exp((x*y)**2)]
                     ],dtype=float)
+                    
+            def _approxHessian(self,f):
+                """Gives an approxmation of the Hessian
+                """
+                return
 
         self.f = Optimize.Function(f,g)
         self.Opt = NewtonOptimizer(tol=1e-18)
