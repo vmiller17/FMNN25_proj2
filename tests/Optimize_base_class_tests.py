@@ -32,7 +32,7 @@ class TestRunningOptimizeBase:
                     ],dtype=float)
 
         self.f = Optimize.Function(f,g)
-        self.Opt = NewtonOptimizer()
+        self.Opt = NewtonOptimizer(tol=1e-18)
 
     def tearDown(self):
         del self.f
@@ -44,4 +44,5 @@ class TestRunningOptimizeBase:
 
         solution = self.Opt(self.f,startValues)
 
-        assert np.isclose(solution,np.array([0,0])).all()
+        assert abs(solution[0]) < 1e-6
+        assert abs(solution[1]) < 1e-6
