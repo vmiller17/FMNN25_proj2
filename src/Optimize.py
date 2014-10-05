@@ -391,13 +391,12 @@ class OptimizeBroydenBad(OptimizeBase):
 class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
 
     def _step(self,f,currentGrad):
-        if not hasattr(self, '_currentHessian'):
+        if not hasattr(self, '_currentHessInv'):
             self._currentHessInv = np.eye(f._numArgs)
             self._i = 0
         self._i = self._i + 1
-        p = -self._currentHessInv.dot(self._currentValues)
-        #alpha = self.inexactLineSearch(f,self._currentValues,p)
-        alpha = 1
+        p = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
+        alpha = self.inexactLineSearch(f,self._currentValues,p)
         s = alpha*p
         nextValues = self._currentValues + s
         y = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
@@ -405,6 +404,5 @@ class OptimizeBFGS(OptimizeBase): #Erik and Victor claim this
             y.dot(self._currentHessInv).dot(y))*(np.outer(s,s))/(s.dot(y))**2 \
                     - (self._currentHessInv.dot(np.outer(y,s)) + \
                         np.outer(s,y).dot(self._currentHessInv))/(s.dot(y))
-        self._currentValues = nextValues
         self._currentHessInv = nextHessInv
-        return self._currentValues
+        return nextValues
