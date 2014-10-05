@@ -100,7 +100,8 @@ class OptimizeBase(object):
 
         self._tol=tol
         self._maxIterations = maxIterations
-        self._currentValues = np.array([0,0,0]) #Why? 
+        self.currentValues = None  
+        self.currentGrad = None #Has to be initialized here, why?
 
 
     def __call__(self,f,startValues):
@@ -117,18 +118,18 @@ class OptimizeBase(object):
             raise TypeError("f must be an instance of the Function class")
             
         
-        self._currentValues = startValues
+        self.currentValues = startValues
         nbrOfIter = 0
-        currentGrad = f.evalGrad(startValues)
+        self.currentGrad = f.evalGrad(startValues)
         
-        while sl.norm(currentGrad) > self._tol and nbrOfIter < self._maxIterations:
-            currentGrad = f.evalGrad(self._currentValues)
-            self._currentValues = self._step(f,currentGrad)
+        while sl.norm(self.currentGrad) > self._tol and nbrOfIter < self._maxIterations:
+            self.currentGrad = f.evalGrad(self.currentValues)
+            self.currentValues = self._step(f)
             nbrOfIter = nbrOfIter + 1
-        return self._currentValues    
+        return self.currentValues    
 
     @abc.abstractmethod
-    def _step(self,f,currentGrad): #Added grad here, seems better to pass along then calculate again.
+    def _step(self,f): 
         """Takes a step towards the solution.
         
         :param Function f: An object of the function class.
@@ -140,7 +141,7 @@ class OptimizeBase(object):
         return 
     
     @abc.abstractmethod
-    def _approxHessian(self,f,currentGrad):
+    def _approxHessian(self,f):
         """Gives an approxmation of the Hessian
         """
         return
@@ -228,7 +229,7 @@ class OptimizeBase(object):
     def exactLineSearch(f,x,S):
         """
         :param Function f: An object of the Function class. F is called with numpy array of shape (m,).
-        :param array x: A numpy array of shape (m,), containing floats. x = _currentValues in OptimizeBase.
+        :param array x: A numpy array of shape (m,), containing floats. x = currentValues in OptimizeBase.
         :param array S: A numpy array of shape (m,), containing floats. S is the newton direction.
         :returns alpha s.t. fi(alpha)=f(x+alpha*S) is minimized.
         :rtype: float
@@ -291,7 +292,7 @@ class OptimizeNewton(OptimizeBase):
         return sl.solve(A, b)
 
 
-    def _approxHessian(self,f,currentGrad):
+    def _approxHessian(self,f):
         """Approximates the hessian for a function f by using a finite
         differences scheme.
 
@@ -305,6 +306,9 @@ class OptimizeNewton(OptimizeBase):
         """
         if not isinstance(f, Function):  
             raise TypeError("f must be an instance of the Function class")
+            
+        if (self.currentGrad is None): #Problem when testing only this function
+            self.currentGrad = f.evalGrad(self.currentValues)
   
         dim = f._numArgs
         hessian = np.zeros([dim,dim])
@@ -314,7 +318,7 @@ class OptimizeNewton(OptimizeBase):
         for n in xrange(dim):
                 dx = np.zeros(dim)
                 dx[n]  = delta
-                hessian[n] = (currentGrad+dx) - (currentGrad-dx)
+                hessian[n] = (self.currentGrad+dx) - (self.currentGrad-dx)
 
         hessian = (hessian + np.transpose(hessian))/(2*delta)
 
@@ -322,12 +326,12 @@ class OptimizeNewton(OptimizeBase):
         try:
             sl.cholesky(hessian)
         except sl.LinAlgError:
-            print "Matrix is not positive definite"
+            print "Matrix is not positive definite" #Raise an exeption here
             return None
             
         return hessian
         
-    def _step(self,f,currentGrad): #Added grad here, seems better to pass along then calculate again.
+    def _step(self,f): #Added grad here, seems better to pass along then calculate again.
         """Takes a step towards the solution.
         
         :param Function f: An object of the function class.
@@ -339,15 +343,15 @@ class OptimizeNewton(OptimizeBase):
         
         if not isinstance(f, Function):
             raise TypeError('f must be an instance of the Function class')
-        if not isinstance(currentGrad,np.ndarray):
+        if not isinstance(self.currentGrad,np.ndarray):
             raise TypeError('currentGrad is not a numpy array')
-        if not issubclass(currentGrad.dtype.type, float):
+        if not issubclass(self.currentGrad.dtype.type, float):
             raise ValueError('currentGrad does not contain floats')
 
-        H = self._approxHessian(f,currentGrad)
-        S = np.dot(H,currentGrad)   
-        alpha = OptimizeBase.exactLineSearch(f,self._currentValues,S)
-        val = self._currentValues + alpha*S
+        H = self._approxHessian(f)
+        S = np.dot(H,self.currentGrad)   
+        alpha = OptimizeBase.exactLineSearch(f,self.currentValues,S)
+        val = self.currentValues + alpha*S
         
         return val 
 
@@ -357,8 +361,8 @@ class OptimizeDFP(OptimizeBase):
         if not (isinstance(f, Function)):
             raise TypeError("f must be an instance of the function class")
 
-        delta = np.array([self._currentValues - self._previousValues])
-        gamma = np.array([f.evalGrad(self._currentValues) - f.evalGrad(self._previousValues)])
+        delta = np.array([self.currentValues - self._previousValues])
+        gamma = np.array([f.evalGrad(self.currentValues) - f.evalGrad(self._previousValues)])
         term1 = np.dot(np.transpose(delta), delta) / np.dot(delta,np.transpose(gamma))
         term2 = np.dot(np.dot(hessian,np.transpose(gamma)),np.dot(gamma,hessian))
         denominator = np.dot(np.dot(gamma, hessian),np.transpose(gamma))
@@ -371,7 +375,7 @@ class OptimizeBroydenGood(OptimizeBase):
     def _updateInvHessian(self, f):
         
         H = np.identity(f._numArgs)
-        val = self._currentValues
+        val = self.currentValues
         prev = self._previousValues
         
         delta = np.array([val - prev])
@@ -397,7 +401,7 @@ class OptimizeBroydenBad(OptimizeBase):
     def _updateInvHessian(self, f):
         
         H = np.identity(f._numArgs)
-        val = self._currentValues
+        val = self.currentValues
         prev = self._previousValues
 
         
