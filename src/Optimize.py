@@ -449,6 +449,7 @@ class OptimizeBroydenGood(OptimizeBase):
         
 class OptimizeBroydenBad(OptimizeBase):
     
+
     def _step(self,f):
     
         if not hasattr(self, '_currentHessInv'):
