@@ -127,54 +127,23 @@ class OptimizeBase(object):
             nbrOfIter = nbrOfIter + 1
         return self._currentValues    
 
+    @abc.abstractmethod
     def _step(self,f,currentGrad): #Added grad here, seems better to pass along then calculate again.
         """Takes a step towards the solution.
+        
         :param Function f: An object of the function class.
         :param array currentGrad: A ndarray of the gradient in the currnet point.
+        :raises TypeErro: If f is not an instance of the function class or if 
+        currentGrad is not an np.array
+        :raises ValueError: If currentGrad does not contain floats.
         """
-
-        H = self._approxHessian(f,currentGrad)
-        S = np.dot(H,currentGrad)   
-        alpha = OptimizeBase.exactLineSearch(f,self._currentValues,S)
-        val = self._currentValues + alpha*S
-        
-        return val 
+        return 
     
+    @abc.abstractmethod
     def _approxHessian(self,f,currentGrad):
-        """Approximates the hessian for a function f by using a finite
-        differences scheme.
-
-        :param Function f: An object of the function class, for which the
-        hessian is to be approximated.
-        :param array currentGrad: the value of the gradient in the current
-        point
-        :raises TypeError: If f is not an instance of the Function class.
-        :returns: The approximated Hessian. 
-        :rtype: array
+        """Gives an approxmation of the Hessian
         """
-        if not isinstance(f, Function):  
-            raise TypeError("f must be an instance of the Function class")
-  
-        dim = f._numArgs
-        hessian = np.zeros([dim,dim])
-        delta = 1.e-4
-        
-        
-        for n in xrange(dim):
-                dx = np.zeros(dim)
-                dx[n]  = delta
-                hessian[n] = (currentGrad+dx) - (currentGrad-dx)
-
-        hessian = (hessian + np.transpose(hessian))/(2*delta)
-
-        
-        try:
-            sl.cholesky(hessian)
-        except sl.LinAlgError:
-            print "Matrix is not positive definite"
-            return None
-            
-        return hessian
+        return
         
 
     @staticmethod
@@ -322,6 +291,65 @@ class OptimizeNewton(OptimizeBase):
         return sl.solve(A, b)
 
 
+    def _approxHessian(self,f,currentGrad):
+        """Approximates the hessian for a function f by using a finite
+        differences scheme.
+
+        :param Function f: An object of the function class, for which the
+        hessian is to be approximated.
+        :param array currentGrad: the value of the gradient in the current
+        point
+        :raises TypeError: If f is not an instance of the Function class.
+        :returns: The approximated Hessian. 
+        :rtype: array
+        """
+        if not isinstance(f, Function):  
+            raise TypeError("f must be an instance of the Function class")
+  
+        dim = f._numArgs
+        hessian = np.zeros([dim,dim])
+        delta = 1.e-4
+        
+        
+        for n in xrange(dim):
+                dx = np.zeros(dim)
+                dx[n]  = delta
+                hessian[n] = (currentGrad+dx) - (currentGrad-dx)
+
+        hessian = (hessian + np.transpose(hessian))/(2*delta)
+
+        
+        try:
+            sl.cholesky(hessian)
+        except sl.LinAlgError:
+            print "Matrix is not positive definite"
+            return None
+            
+        return hessian
+        
+    def _step(self,f,currentGrad): #Added grad here, seems better to pass along then calculate again.
+        """Takes a step towards the solution.
+        
+        :param Function f: An object of the function class.
+        :param array currentGrad: A ndarray of the gradient in the currnet point.
+        :raises TypeErro: If f is not an instance of the function class or if 
+        currentGrad is not an np.array
+        :raises ValueError: If currentGrad does not contain floats.
+        """
+        
+        if not isinstance(f, Function):
+            raise TypeError('f must be an instance of the Function class')
+        if not isinstance(currentGrad,np.ndarray):
+            raise TypeError('currentGrad is not a numpy array')
+        if not issubclass(currentGrad.dtype.type, float):
+            raise ValueError('currentGrad does not contain floats')
+
+        H = self._approxHessian(f,currentGrad)
+        S = np.dot(H,currentGrad)   
+        alpha = OptimizeBase.exactLineSearch(f,self._currentValues,S)
+        val = self._currentValues + alpha*S
+        
+        return val 
 
 class OptimizeDFP(OptimizeBase):
 
