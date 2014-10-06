@@ -432,11 +432,11 @@ class OptimizeBroydenGood(OptimizeBase):
             self._currentHessInv = np.eye(f._numArgs)
             self._i = 0
         self._i = self._i + 1
-        s = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
-        alpha = self.inexactLineSearch(f,self._currentValues,s)
+        s = -self._currentHessInv.dot(f.evalGrad(self.currentValues))
+        alpha = self.inexactLineSearch(f,self.currentValues,s)
         delta = alpha*s
-        nextValues = self._currentValues + delta
-        gamma = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
+        nextValues = self.currentValues + delta
+        gamma = f.evalGrad(nextValues) - f.evalGrad(self.currentValues)
         
        
         u = delta - np.dot(self._currentHessInv, gamma)       
