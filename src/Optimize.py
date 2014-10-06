@@ -435,7 +435,7 @@ class OptimizeBroydenGood(OptimizeBase):
         s = -self._currentHessInv.dot(f.evalGrad(self.currentValues))
         alpha = self.inexactLineSearch(f,self.currentValues,s)
         delta = alpha*s
-        nextValues = self.currentValues + delta
+        nextValues = self._currentValues + delta
         gamma = f.evalGrad(nextValues) - f.evalGrad(self.currentValues)
         
        
