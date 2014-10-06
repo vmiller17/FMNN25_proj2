@@ -131,7 +131,7 @@ def gradchebyquad(x):
                              for xj in x] for i in xrange(len(x) - 1)])
     return dot(chq[1:].reshape((1, -1)), UM).reshape((-1, ))
     
-## Initialguesses and scipy approximates
+## Initial guesses and scipy approximations.
 x0n4=np.linspace(0,1,4)
 x0n8=np.linspace(0,1,8)
 x0n11=np.linspace(0,1,11)
