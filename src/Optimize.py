@@ -381,24 +381,24 @@ class OptimizeDFP(OptimizeBase):
         if not isinstance(f, Function):
             raise TypeError("f must be an instance of the Function class")
 
-        self._currentValues = startValues
+        self.currentValues = startValues
         nbrIter = 1
         self._currentGrad = f.evalGrad(startValues)
         self._currentH = np.eye(f._numArgs)
         tempValues = self._step(f)
-        self._previousValues = np.copy(self._currentValues)
-        self._currentValues = tempValues
+        self._previousValues = np.copy(self.currentValues)
+        self.currentValues = tempValues
         self._previousGrad = np.copy(self._currentGrad)
-        self._currentGrad = f.evalGrad(self._currentValues)
+        self._currentGrad = f.evalGrad(self.currentValues)
         while sl.norm(self._currentGrad) > self._tol and nbrIter < self._maxIterations:
             self._currentH = self._approximateHessian(f)
-            self._previousValues = np.copy(self._currentValues)
-            self._currentValues = self._step(f)
+            self._previousValues = np.copy(self.currentValues)
+            self.currentValues = self._step(f)
             self._previousGrad = np.copy(self._currentGrad)
-            self._currentGrad = f.evalGrad(self._currentValues)
+            self._currentGrad = f.evalGrad(self.currentValues)
             nbrIter += 1
 
-        return self._currentValues
+        return self.currentValues
 
     def _step(self, f):
         """Takes a step towards the solution.
@@ -406,8 +406,8 @@ class OptimizeDFP(OptimizeBase):
         """
 
         S = np.dot(self._currentH, self._currentGrad)
-        alpha = OptimizeBase.inexactLineSearch(f, self._currentValues, S)
-        val = self._currentValues + alpha*S
+        alpha = OptimizeBase.inexactLineSearch(f, self.currentValues, S)
+        val = self.currentValues + alpha*S
         return val
 
     def _approxHessian(self, f):
@@ -432,11 +432,11 @@ class OptimizeBroydenGood(OptimizeBase):
             self._currentHessInv = np.eye(f._numArgs)
             self._i = 0
         self._i = self._i + 1
-        s = -self._currentHessInv.dot(f.evalGrad(self._currentValues))
-        alpha = self.inexactLineSearch(f,self._currentValues,s)
+        s = -self._currentHessInv.dot(f.evalGrad(self.currentValues))
+        alpha = self.inexactLineSearch(f,self.currentValues,s)
         delta = alpha*s
-        nextValues = self._currentValues + delta
-        gamma = f.evalGrad(nextValues) - f.evalGrad(self._currentValues)
+        nextValues = self.currentValues + delta
+        gamma = f.evalGrad(nextValues) - f.evalGrad(self.currentValues)
         
        
         u = delta - np.dot(self._currentHessInv, gamma)       
